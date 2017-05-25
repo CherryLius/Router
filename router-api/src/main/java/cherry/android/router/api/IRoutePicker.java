@@ -7,5 +7,5 @@ import java.util.Map;
  */
 
 public interface IRoutePicker {
-    void pick(Map<String, Class<?>> routeTable);
+    void pick(Map<String, RouteMeta> routeTable);
 }
