@@ -6,8 +6,11 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -39,6 +42,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
         mEditText = (EditText) findViewById(R.id.edit_text);
+        mEditText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                Button button = (Button) findViewById(R.id.button_1);
+                button.setText("OPEN ROUTE " + s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
         findViewById(R.id.button_0).setOnClickListener(this);
         findViewById(R.id.button_1).setOnClickListener(this);
         findViewById(R.id.button_2).setOnClickListener(this);
@@ -76,7 +96,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Router.build("activity://cherry/route1?id=1&name=route1").open();
                 break;
             case R.id.button_3:
-                Router.build("/route2/activity").requestCode(100).open();
+                Router.build("/route2/activity").requestCode(100)
+                        .transition(R.anim.slide_in_bottom, R.anim.slide_out_bottom)
+                        .open();
                 break;
         }
     }

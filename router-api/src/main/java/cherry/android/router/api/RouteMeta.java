@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.support.annotation.IntDef;
+import android.support.v4.app.ActivityOptionsCompat;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -33,6 +34,9 @@ public class RouteMeta {
     private String uri;
     private Bundle arguments;
     private int requestCode = -1;
+    private int enterAnim;
+    private int exitAnim;
+    private ActivityOptionsCompat optionsCompat;
     @Type
     private int type = TYPE_MATCHER;
 
@@ -100,10 +104,34 @@ public class RouteMeta {
         return this.requestCode;
     }
 
+    void transition(int enterAnim, int exitAnim) {
+        this.enterAnim = enterAnim;
+        this.exitAnim = exitAnim;
+    }
+
+    int getEnterAnim() {
+        return this.enterAnim;
+    }
+
+    int getExitAnim() {
+        return this.exitAnim;
+    }
+
+    void setOptionsCompat(ActivityOptionsCompat optionsCompat) {
+        this.optionsCompat = optionsCompat;
+    }
+
+    ActivityOptionsCompat getOptionsCompat() {
+        return this.optionsCompat;
+    }
+
     void reset() {
         if (arguments != null)
             arguments.clear();
         requestCode = -1;
+        enterAnim = 0;
+        exitAnim = 0;
+        optionsCompat = null;
     }
 
     private void parseQueryArgument() {

@@ -29,7 +29,7 @@
             android:id="@+id/button_1"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="open Edit Route" />
+            android:text="open Route" />
 
         <android.support.v7.widget.AppCompatButton
             android:id="@+id/button_2"

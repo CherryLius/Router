@@ -1,5 +1,6 @@
 package cherry.android.router.api;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
@@ -7,6 +8,8 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.content.ContextCompat;
 
 import java.lang.reflect.Constructor;
@@ -147,6 +150,21 @@ public final class RouterManager {
         return this;
     }
 
+    public RouterManager transition(int enterAnim, int exitAnim) {
+        if (mRouteMeta != null) {
+            mRouteMeta.transition(enterAnim, exitAnim);
+        }
+        return this;
+    }
+
+    @TargetApi(16)
+    public RouterManager optionsCompat(ActivityOptionsCompat optionsCompat) {
+        if (mRouteMeta != null) {
+            mRouteMeta.setOptionsCompat(optionsCompat);
+        }
+        return this;
+    }
+
     public RouterManager requestCode(int requestCode) {
         if (mRouteMeta != null) {
             mRouteMeta.setRequestCode(requestCode);
@@ -170,10 +188,14 @@ public final class RouterManager {
         Intent intent = getIntent(context);
         if (context instanceof Activity) {
             Activity activity = (Activity) context;
+            Bundle options = mRouteMeta.getOptionsCompat() == null ? null : mRouteMeta.getOptionsCompat().toBundle();
             if (mRouteMeta.getRequestCode() == -1) {
-                activity.startActivity(intent);
+                ActivityCompat.startActivity(activity, intent, options);
             } else {
-                activity.startActivityForResult(intent, mRouteMeta.getRequestCode());
+                ActivityCompat.startActivityForResult(activity, intent, mRouteMeta.getRequestCode(), options);
+            }
+            if (mRouteMeta.getEnterAnim() != 0 || mRouteMeta.getExitAnim() != 0) {
+                activity.overridePendingTransition(mRouteMeta.getEnterAnim(), mRouteMeta.getExitAnim());
             }
         } else {
             ContextCompat.startActivity(context, intent, null);
@@ -191,10 +213,14 @@ public final class RouterManager {
             return;
         }
         Intent intent = getIntent(fragment.getActivity());
+        Bundle options = mRouteMeta.getOptionsCompat() == null ? null : mRouteMeta.getOptionsCompat().toBundle();
         if (mRouteMeta.getRequestCode() == -1) {
-            fragment.startActivity(intent);
+            fragment.startActivity(intent, options);
         } else {
-            fragment.startActivityForResult(intent, mRouteMeta.getRequestCode());
+            fragment.startActivityForResult(intent, mRouteMeta.getRequestCode(), options);
+        }
+        if (mRouteMeta.getEnterAnim() != 0 || mRouteMeta.getExitAnim() != 0) {
+            fragment.getActivity().overridePendingTransition(mRouteMeta.getEnterAnim(), mRouteMeta.getExitAnim());
         }
         mRouteMeta.reset();
     }
@@ -209,10 +235,14 @@ public final class RouterManager {
             return;
         }
         Intent intent = getIntent(fragment.getActivity());
+        Bundle options = mRouteMeta.getOptionsCompat() == null ? null : mRouteMeta.getOptionsCompat().toBundle();
         if (mRouteMeta.getRequestCode() == -1) {
-            fragment.startActivity(intent);
+            fragment.startActivity(intent, options);
         } else {
-            fragment.startActivityForResult(intent, mRouteMeta.getRequestCode());
+            fragment.startActivityForResult(intent, mRouteMeta.getRequestCode(), options);
+        }
+        if (mRouteMeta.getEnterAnim() != 0 || mRouteMeta.getExitAnim() != 0) {
+            fragment.getActivity().overridePendingTransition(mRouteMeta.getEnterAnim(), mRouteMeta.getExitAnim());
         }
         mRouteMeta.reset();
     }
