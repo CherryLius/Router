@@ -2,14 +2,17 @@ package cherry.android.router;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import cherry.android.router.activity.TestActivity;
-import cherry.android.router.api.IRoutePicker;
 import cherry.android.router.api.RouteMeta;
 import cherry.android.router.api.Router;
+import cherry.android.router.api.intercept.IInterceptor;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -20,14 +23,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.button_0).setOnClickListener(this);
 
         Router.init(getApplicationContext());
-        Router.addRoutePicker(new IRoutePicker() {
+        Router.addGlobalInterceptor(new IInterceptor() {
             @Override
-            public void pick(Map<String, RouteMeta> routeTable) {
-                routeTable.put("test/test?id=1", RouteMeta.newMeta(
-                        "test/test?id=1",
-                        TestActivity.class,
-                        RouteMeta.TYPE_ACTIVITY
-                ));
+            public boolean intercept(RouteMeta routeMeta) {
+                String message = String.format("Global interceptor : \nuri=%s,\nclass=%s", routeMeta.getUri(), routeMeta.getDestination());
+                Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show();
+                Log.e("Test", message);
+                return false;
+            }
+        });
+        Router.addRoutePicker(new Router.RoutePicker() {
+            @Override
+            public Map<String, Class<?>> pick() {
+                Map<String, Class<?>> map = new HashMap<>();
+                map.put("test/test?id=1", TestActivity.class);
+                return map;
             }
         });
     }
@@ -36,7 +46,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.button_0:
-                Router.build("test/test?id=1&name=Tom&page=10#1").open(this);
+                Router.build("test/test?id=1&name=Tom&page=10#1").open();
                 break;
         }
     }

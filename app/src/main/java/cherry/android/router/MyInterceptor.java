@@ -1,6 +1,9 @@
 package cherry.android.router;
 
+import android.util.Log;
+
 import cherry.android.router.annotations.Interceptor;
+import cherry.android.router.api.RouteMeta;
 import cherry.android.router.api.intercept.IInterceptor;
 
 /**
@@ -8,9 +11,10 @@ import cherry.android.router.api.intercept.IInterceptor;
  */
 
 @Interceptor("m")
-public class MyIntercepter implements IInterceptor {
+public class MyInterceptor implements IInterceptor {
     @Override
-    public boolean intercept() {
+    public boolean intercept(RouteMeta routeMeta) {
+        Log.e("Test", "intercept m");
         return false;
     }
 }

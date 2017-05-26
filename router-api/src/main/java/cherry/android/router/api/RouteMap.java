@@ -23,6 +23,15 @@ public class RouteMap extends LinkedHashMap<String, RouteMeta> {
         return super.get(key);
     }
 
+    @Override
+    public boolean containsKey(Object key) {
+        if (key instanceof String) {
+            String uri = String.valueOf(key);
+            return super.containsKey(parseUri(uri));
+        }
+        return super.containsKey(key);
+    }
+
     private static String parseUri(String uri) {
         int argIndex = uri.indexOf('?');
         if (argIndex != -1) {

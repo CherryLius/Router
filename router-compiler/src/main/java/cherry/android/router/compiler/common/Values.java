@@ -17,4 +17,5 @@ public interface Values {
     ClassName INTERCEPTOR_PICKER = ClassName.get("cherry.android.router.api", "InterceptorPicker");
     ClassName INTERCEPTOR = ClassName.get("cherry.android.router.api.intercept", "IInterceptor");
     ClassName ROUTE_META = ClassName.get("cherry.android.router.api", "RouteMeta");
+    ClassName INTERCEPTOR_META = ClassName.get("cherry.android.router.api", "InterceptorMeta");
 }

@@ -7,7 +7,7 @@ import android.util.Log;
 import cherry.android.router.R;
 import cherry.android.router.annotations.Route;
 
-@Route({"test/activity", "activity://test/test1"})
+@Route(value = {"test/activity", "activity://test/test1"}, interceptor = {"m", "nnn"})
 public class TestActivity extends AppCompatActivity {
 
     @Override

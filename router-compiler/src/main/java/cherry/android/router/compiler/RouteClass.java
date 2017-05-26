@@ -20,6 +20,7 @@ public class RouteClass {
     private Elements mElementUtils;
     private TypeElement mTypeElement;
     private String[] mUris;
+    private String[] mInterceptors;
 
     public RouteClass(TypeElement typeElement, Elements elementUtils, Types typeUtils) {
         this.mTypeElement = typeElement;
@@ -27,6 +28,7 @@ public class RouteClass {
         this.mTypeUtils = typeUtils;
         Route route = mTypeElement.getAnnotation(Route.class);
         mUris = route.value();
+        mInterceptors = route.interceptor();
         for (String uri : mUris) {
             System.err.printf("uri=%s\n", uri);
         }
@@ -42,14 +44,27 @@ public class RouteClass {
                 || isSubType(Values.SUPPORT_V4_FRAGMENT_CLASS_NAME)) {
             type = "TYPE_FRAGMENT";
         }
+        StringBuilder metaBuilder = new StringBuilder();
+        if (mInterceptors != null && mInterceptors.length > 0) {
+            for (String interceptor : mInterceptors) {
+                metaBuilder
+                        .append(',')
+                        .append('\"')
+                        .append(interceptor)
+                        .append('\"');
+            }
+        }
+        String statement = String.format("routeTable.put($S, $T.newMeta($S, $T.class, $T.$N%s))", metaBuilder.toString());
 
         for (String uri : mUris) {
-            codeBuilder.addStatement("routeTable.put($S, $T.newMeta($S, $T.class, $T.$N))", uri,
-                    Values.ROUTE_META,
-                    uri,
-                    TypeName.get(mTypeElement.asType()),
-                    Values.ROUTE_META,
-                    type);
+            codeBuilder.beginControlFlow("if (!routeTable.containsKey($S))", uri)
+                    .addStatement(statement, uri,
+                            Values.ROUTE_META,
+                            uri,
+                            TypeName.get(mTypeElement.asType()),
+                            Values.ROUTE_META,
+                            type)
+                    .endControlFlow();
         }
         return codeBuilder.build();
     }

@@ -5,7 +5,6 @@ import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeSpec;
-import com.squareup.javapoet.WildcardTypeName;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,10 +43,8 @@ public class InterceptorGenerator implements IGenerator {
 
     private MethodSpec buildPickMethod() {
         ParameterizedTypeName mapType = ParameterizedTypeName.get(ClassName.get(Map.class),
-                ClassName.get(String.class),
-                ParameterizedTypeName.get(ClassName.get(Class.class),
-                        WildcardTypeName.subtypeOf(Values.INTERCEPTOR)));
-
+                ClassName.get(String.class),Values.INTERCEPTOR_META);
+//      ParameterizedTypeName.get(ClassName.get(Class.class), WildcardTypeName.subtypeOf(Values.INTERCEPTOR))
         MethodSpec.Builder method = MethodSpec.methodBuilder("pick")
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)

@@ -28,7 +28,8 @@ public final class RouterManager {
     private static RouterManager sInstance;
 
     private Map<String, RouteMeta> mRouterTable = new RouteMap();
-    private Map<String, Class<? extends IInterceptor>> mIntercptorMap = new LinkedHashMap<>();
+    private Map<String, InterceptorMeta> mInterceptorMap = new LinkedHashMap<>();
+    private IInterceptor mGlobalInterceptor;
     private boolean mInitialized;
     private Context mContext;
 
@@ -61,12 +62,31 @@ public final class RouterManager {
         }
     }
 
-    void addRoutePicker(@NonNull IRoutePicker picker) {
+    private void addRoutePicker(@NonNull IRoutePicker picker) {
         picker.pick(mRouterTable);
     }
 
+    void addRoutePicker(@NonNull Router.RoutePicker picker) {
+        Map<String, Class<?>> map = picker.pick();
+        if (map == null || map.isEmpty()) return;
+        for (Map.Entry<String, Class<?>> entry : map.entrySet()) {
+            if (mRouterTable.containsKey(entry.getKey()))
+                continue;
+            RouteMeta meta = getRouteByClass(entry.getValue());
+            if (meta != null) {
+                mRouterTable.put(entry.getKey(), meta);
+            } else {
+                mRouterTable.put(entry.getKey(), RouteMeta.newMeta(entry.getKey(), entry.getValue()));
+            }
+        }
+    }
+
     void addInterceptor(@NonNull InterceptorPicker picker) {
-        picker.pick(mIntercptorMap);
+        picker.pick(mInterceptorMap);
+    }
+
+    void addGlobalInterceptor(@NonNull IInterceptor interceptor) {
+        mGlobalInterceptor = interceptor;
     }
 
     RouterManager build(@NonNull String uri) {
@@ -82,6 +102,18 @@ public final class RouterManager {
         return this;
     }
 
+    boolean intercept(RouteMeta routeMeta) {
+        if (mGlobalInterceptor != null && mGlobalInterceptor.intercept(routeMeta)) {
+            return true;
+        }
+        routeMeta.findInterceptors(mInterceptorMap);
+        if (routeMeta.interceptor()) {
+            return true;
+        }
+        Log.e(TAG, "intercept");
+        return false;
+    }
+
     public void open() {
         open(mContext);
     }
@@ -94,13 +126,19 @@ public final class RouterManager {
         if (!(context instanceof Activity)) {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         }
-        intent.putExtras(mRouteMeta.getQueryArgument());
+        intent.putExtras(mRouteMeta.getArgument());
         ContextCompat.startActivity(context, intent, null);
     }
 
-    public boolean intercept(RouteMeta routeMeta) {
-        Log.e(TAG, "intercept");
-        return false;
+    private RouteMeta getRouteByClass(Class<?> cls) {
+        if (mRouterTable == null || mRouterTable.isEmpty())
+            return null;
+        for (RouteMeta route : mRouterTable.values()) {
+            if (route.getDestination().equals(cls)) {
+                return route;
+            }
+        }
+        return null;
     }
 
     private void pickRouteTable(@NonNull String className) {
