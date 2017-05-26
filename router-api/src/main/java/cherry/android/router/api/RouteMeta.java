@@ -1,5 +1,7 @@
 package cherry.android.router.api;
 
+import android.app.Activity;
+import android.app.Fragment;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.PersistableBundle;
@@ -155,12 +157,12 @@ public class RouteMeta {
     }
 
     static int getTypeByClass(Class<?> destination) {
-        String className = destination.getCanonicalName();
-        if (className.equals("android.app.Activity"))
+        if (Activity.class.isAssignableFrom(destination)) {
             return TYPE_ACTIVITY;
-        else if (className.equals("android.app.Fragment")
-                || className.equals("android.support.v4.app.Fragment"))
+        } else if (Fragment.class.isAssignableFrom(destination)
+                || android.support.v4.app.Fragment.class.isAssignableFrom(destination)) {
             return TYPE_FRAGMENT;
+        }
         return TYPE_MATCHER;
     }
 }

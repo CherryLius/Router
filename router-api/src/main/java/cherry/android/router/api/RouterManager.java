@@ -93,18 +93,26 @@ public final class RouterManager {
     }
 
     RouterManager build(@NonNull String uri) {
-        if (mRouteMeta != null) {
-            if (!uri.equals(mRouteMeta.getUri())) {
-                mRouteMeta = mRouterTable.get(uri);
+        if (!mInitialized) {
+            throw new RuntimeException("Router must be initialize");
+        }
+        if (mRouteMeta == null || !uri.equals(mRouteMeta.getUri())) {
+            mRouteMeta = getRouteMeta(uri);
+            if (mRouteMeta != null) {
                 mRouteMeta.reset();
                 mRouteMeta.setUri(uri);
             }
-        } else {
-            mRouteMeta = mRouterTable.get(uri);
-            mRouteMeta.reset();
-            mRouteMeta.setUri(uri);
         }
         return this;
+    }
+
+    private RouteMeta getRouteMeta(String uri) {
+        RouteMeta routeMeta = mRouterTable.get(uri);
+        if (routeMeta == null) {
+            Logger.e(TAG, "uri invalid Route: " + uri);
+            //throw new IllegalStateException("uri invalid Route: " + uri);
+        }
+        return routeMeta;
     }
 
     boolean intercept(RouteMeta routeMeta) {
@@ -115,7 +123,6 @@ public final class RouterManager {
         if (routeMeta.interceptor()) {
             return true;
         }
-        Logger.e(TAG, "intercept");
         return false;
     }
 
@@ -152,6 +159,10 @@ public final class RouterManager {
     }
 
     public void open(Context context) {
+        if (mRouteMeta == null) {
+            Logger.e(TAG, "open failed");
+            return;
+        }
         if (intercept(mRouteMeta)) {
             mRouteMeta.reset();
             return;
@@ -171,6 +182,10 @@ public final class RouterManager {
     }
 
     public void open(Fragment fragment) {
+        if (mRouteMeta == null) {
+            Logger.e(TAG, "open failed");
+            return;
+        }
         if (intercept(mRouteMeta)) {
             mRouteMeta.reset();
             return;
@@ -185,6 +200,10 @@ public final class RouterManager {
     }
 
     public void open(android.support.v4.app.Fragment fragment) {
+        if (mRouteMeta == null) {
+            Logger.e(TAG, "open failed");
+            return;
+        }
         if (intercept(mRouteMeta)) {
             mRouteMeta.reset();
             return;
@@ -203,12 +222,45 @@ public final class RouterManager {
     }
 
     public Intent getIntent(Context context) {
+        if (mRouteMeta == null) {
+            Logger.e(TAG, "getIntent failed");
+            return null;
+        }
         Intent intent = new Intent(context, mRouteMeta.getDestination());
         intent.putExtras(mRouteMeta.getArgument());
         if (!(context instanceof Activity)) {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         }
         return intent;
+    }
+
+    public <T> T getFragment() {
+        if (mRouteMeta == null) {
+            return null;
+        }
+        try {
+            Class<?> destination = mRouteMeta.getDestination();
+            if (!Fragment.class.isAssignableFrom(destination)
+                    && !android.support.v4.app.Fragment.class.isAssignableFrom(destination))
+                throw new IllegalArgumentException("parameter must be android.app.Fragment or android.support.v4.app.Fragment");
+            Constructor constructor = destination.getConstructor();
+            Object object = constructor.newInstance();
+            if (object instanceof Fragment) {
+                ((Fragment) object).setArguments(mRouteMeta.getArgument());
+            } else if (object instanceof android.support.v4.app.Fragment) {
+                ((android.support.v4.app.Fragment) object).setArguments(mRouteMeta.getArgument());
+            }
+            return (T) object;
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     private RouteMeta getRouteByClass(Class<?> cls) {
