@@ -1,14 +1,14 @@
-package cherry.android.router.activity;
+package cherry.android.router;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
+import android.view.View;
 
-import cherry.android.router.R;
 import cherry.android.router.annotations.Route;
+import cherry.android.router.api.utils.Logger;
 
 @Route(value = {"test/activity", "activity://test/test1"}, interceptor = {"m", "nnn"})
-public class TestActivity extends AppCompatActivity {
+public class TestActivity extends AppCompatActivity implements View.OnClickListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -17,8 +17,15 @@ public class TestActivity extends AppCompatActivity {
         Bundle bundle = getIntent().getExtras();
         if (bundle != null) {
             for (String key : bundle.keySet()) {
-                Log.i("Test", "key=" + key + ",value=" + bundle.get(key));
+                Logger.i("Test", "key=" + key + ",value=" + bundle.get(key));
             }
         }
+        findViewById(R.id.button_0).setOnClickListener(this);
+    }
+
+    @Override
+    public void onClick(View v) {
+        setResult(RESULT_OK);
+        finish();
     }
 }

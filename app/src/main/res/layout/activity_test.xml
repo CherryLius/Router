@@ -4,12 +4,18 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="cherry.android.router.activity.TestActivity">
+    tools:context="cherry.android.router.TestActivity">
 
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="I am Test Activity"
         android:textSize="20sp" />
+
+    <Button
+        android:id="@+id/button_0"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="setResult" />
 
 </LinearLayout>

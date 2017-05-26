@@ -2,8 +2,8 @@ package cherry.android.router.api;
 
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.support.annotation.IntDef;
-import android.util.Log;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -12,24 +12,30 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import cherry.android.router.api.utils.Logger;
+import cherry.android.router.api.utils.Utils;
+
 /**
  * Created by Administrator on 2017/5/25.
  */
 
 public class RouteMeta {
+
+    private static final String TAG = "RouteMeta";
+
     public static final int TYPE_ACTIVITY = 0x01;
     public static final int TYPE_FRAGMENT = 0x02;
     public static final int TYPE_MATCHER = 0x03;
 
     private Class<?> destination;
     private String uri;
-    private Bundle mArguments;
+    private Bundle arguments;
+    private int requestCode = -1;
     @Type
     private int type = TYPE_MATCHER;
 
     private String[] interceptorNames;
-    private List<InterceptorMeta> mInterceptorList;
-
+    private List<InterceptorMeta> interceptorList;
 
     @IntDef({TYPE_ACTIVITY, TYPE_FRAGMENT, TYPE_MATCHER})
     @Retention(RetentionPolicy.SOURCE)
@@ -69,18 +75,44 @@ public class RouteMeta {
     }
 
     Bundle getArgument() {
-        return mArguments;
+        return arguments;
+    }
+
+    void putExtra(String key, Object value) {
+        Utils.putValue2Bundle(arguments, key, value);
+    }
+
+    void putExtra(Bundle value) {
+        arguments.putAll(value);
+    }
+
+    void putExtra(PersistableBundle value) {
+        arguments.putAll(value);
+    }
+
+    void setRequestCode(int requestCode) {
+        this.requestCode = requestCode < 0 ? -1 : requestCode;
+    }
+
+    int getRequestCode() {
+        return this.requestCode;
+    }
+
+    void reset() {
+        if (arguments != null)
+            arguments.clear();
+        requestCode = -1;
     }
 
     private void parseQueryArgument() {
         Uri routeUri = Uri.parse(uri);
-        if (mArguments == null) {
-            mArguments = new Bundle();
+        if (arguments == null) {
+            arguments = new Bundle();
         } else {
-            mArguments.clear();
+            arguments.clear();
         }
         for (String name : routeUri.getQueryParameterNames()) {
-            mArguments.putString(name, routeUri.getQueryParameter(name));
+            arguments.putString(name, routeUri.getQueryParameter(name));
         }
     }
 
@@ -89,23 +121,23 @@ public class RouteMeta {
             return;
         if (this.interceptorNames == null || this.interceptorNames.length == 0)
             return;
-        if (mInterceptorList == null)
-            mInterceptorList = new ArrayList<>();
+        if (interceptorList == null)
+            interceptorList = new ArrayList<>();
         for (String name : interceptorNames) {
             InterceptorMeta meta = interceptors.get(name);
-            if (meta != null && !mInterceptorList.contains(meta)) {
-                mInterceptorList.add(meta);
+            if (meta != null && !interceptorList.contains(meta)) {
+                interceptorList.add(meta);
             }
         }
-        Collections.sort(mInterceptorList);
+        Collections.sort(interceptorList);
     }
 
     boolean interceptor() {
-        if (mInterceptorList == null || mInterceptorList.size() == 0) {
-            Log.e("Test", "interceptor Meta List is Empty");
+        if (interceptorList == null || interceptorList.size() == 0) {
+            Logger.w(TAG, "interceptor Meta List is Empty");
             return false;
         }
-        for (InterceptorMeta meta : mInterceptorList) {
+        for (InterceptorMeta meta : interceptorList) {
             if (meta.getInterceptor().intercept(this)) {
                 return true;
             }

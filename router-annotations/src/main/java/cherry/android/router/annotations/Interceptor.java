@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Documented
 public @interface Interceptor {
-    String value() default "";
+    String value();
 
     int priority() default -1;
 }

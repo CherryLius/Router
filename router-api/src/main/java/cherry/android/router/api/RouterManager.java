@@ -1,11 +1,13 @@
 package cherry.android.router.api;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
 import android.support.v4.content.ContextCompat;
-import android.util.Log;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -14,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 
 import cherry.android.router.api.intercept.IInterceptor;
+import cherry.android.router.api.utils.Logger;
 import cherry.android.router.api.utils.Utils;
 
 /**
@@ -93,10 +96,12 @@ public final class RouterManager {
         if (mRouteMeta != null) {
             if (!uri.equals(mRouteMeta.getUri())) {
                 mRouteMeta = mRouterTable.get(uri);
+                mRouteMeta.reset();
                 mRouteMeta.setUri(uri);
             }
         } else {
             mRouteMeta = mRouterTable.get(uri);
+            mRouteMeta.reset();
             mRouteMeta.setUri(uri);
         }
         return this;
@@ -110,8 +115,36 @@ public final class RouterManager {
         if (routeMeta.interceptor()) {
             return true;
         }
-        Log.e(TAG, "intercept");
+        Logger.e(TAG, "intercept");
         return false;
+    }
+
+    public RouterManager extra(String key, Object value) {
+        if (mRouteMeta != null) {
+            mRouteMeta.putExtra(key, value);
+        }
+        return this;
+    }
+
+    public RouterManager allExtra(Bundle value) {
+        if (mRouteMeta != null) {
+            mRouteMeta.putExtra(value);
+        }
+        return this;
+    }
+
+    public RouterManager allExtra(PersistableBundle value) {
+        if (mRouteMeta != null) {
+            mRouteMeta.putExtra(value);
+        }
+        return this;
+    }
+
+    public RouterManager requestCode(int requestCode) {
+        if (mRouteMeta != null) {
+            mRouteMeta.setRequestCode(requestCode);
+        }
+        return this;
     }
 
     public void open() {
@@ -120,14 +153,62 @@ public final class RouterManager {
 
     public void open(Context context) {
         if (intercept(mRouteMeta)) {
+            mRouteMeta.reset();
             return;
         }
+        Intent intent = getIntent(context);
+        if (context instanceof Activity) {
+            Activity activity = (Activity) context;
+            if (mRouteMeta.getRequestCode() == -1) {
+                activity.startActivity(intent);
+            } else {
+                activity.startActivityForResult(intent, mRouteMeta.getRequestCode());
+            }
+        } else {
+            ContextCompat.startActivity(context, intent, null);
+        }
+        mRouteMeta.reset();
+    }
+
+    public void open(Fragment fragment) {
+        if (intercept(mRouteMeta)) {
+            mRouteMeta.reset();
+            return;
+        }
+        Intent intent = getIntent(fragment.getActivity());
+        if (mRouteMeta.getRequestCode() == -1) {
+            fragment.startActivity(intent);
+        } else {
+            fragment.startActivityForResult(intent, mRouteMeta.getRequestCode());
+        }
+        mRouteMeta.reset();
+    }
+
+    public void open(android.support.v4.app.Fragment fragment) {
+        if (intercept(mRouteMeta)) {
+            mRouteMeta.reset();
+            return;
+        }
+        Intent intent = getIntent(fragment.getActivity());
+        if (mRouteMeta.getRequestCode() == -1) {
+            fragment.startActivity(intent);
+        } else {
+            fragment.startActivityForResult(intent, mRouteMeta.getRequestCode());
+        }
+        mRouteMeta.reset();
+    }
+
+    public Intent getIntent() {
+        return getIntent(mContext);
+    }
+
+    public Intent getIntent(Context context) {
         Intent intent = new Intent(context, mRouteMeta.getDestination());
+        intent.putExtras(mRouteMeta.getArgument());
         if (!(context instanceof Activity)) {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         }
-        intent.putExtras(mRouteMeta.getArgument());
-        ContextCompat.startActivity(context, intent, null);
+        return intent;
     }
 
     private RouteMeta getRouteByClass(Class<?> cls) {
@@ -148,16 +229,16 @@ public final class RouterManager {
             IRoutePicker routePicker = (IRoutePicker) constructor.newInstance();
             addRoutePicker(routePicker);
         } catch (ClassNotFoundException e) {
-            Log.e(TAG, "ClassNotFound", e);
+            Logger.e(TAG, "ClassNotFound", e);
             throw new IllegalStateException("Class Not Found", e);
         } catch (NoSuchMethodException e) {
-            Log.e(TAG, "NoSuchMethodException", e);
+            Logger.e(TAG, "NoSuchMethodException", e);
         } catch (IllegalAccessException e) {
-            Log.e(TAG, "IllegalAccessException", e);
+            Logger.e(TAG, "IllegalAccessException", e);
         } catch (InstantiationException e) {
-            Log.e(TAG, "InstantiationException", e);
+            Logger.e(TAG, "InstantiationException", e);
         } catch (InvocationTargetException e) {
-            Log.e(TAG, "InvocationTargetException", e);
+            Logger.e(TAG, "InvocationTargetException", e);
         }
     }
 
@@ -168,16 +249,16 @@ public final class RouterManager {
             InterceptorPicker picker = (InterceptorPicker) constructor.newInstance();
             addInterceptor(picker);
         } catch (ClassNotFoundException e) {
-            Log.e(TAG, "ClassNotFound", e);
+            Logger.e(TAG, "ClassNotFound", e);
             throw new IllegalStateException("Class Not Found", e);
         } catch (NoSuchMethodException e) {
-            Log.e(TAG, "NoSuchMethodException", e);
+            Logger.e(TAG, "NoSuchMethodException", e);
         } catch (IllegalAccessException e) {
-            Log.e(TAG, "IllegalAccessException", e);
+            Logger.e(TAG, "IllegalAccessException", e);
         } catch (InstantiationException e) {
-            Log.e(TAG, "InstantiationException", e);
+            Logger.e(TAG, "InstantiationException", e);
         } catch (InvocationTargetException e) {
-            Log.e(TAG, "InvocationTargetException", e);
+            Logger.e(TAG, "InvocationTargetException", e);
         }
     }
 }
