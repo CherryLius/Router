@@ -193,8 +193,10 @@ public class RouteMeta {
             intent = new Intent(context, this.destination);
             intent.putExtras(this.arguments);
         } else if (this.type == TYPE_MATCHER) {
-            intent = new Intent(Intent.ACTION_VIEW);
-            intent.setData(Uri.parse(uri));
+            if (uri.startsWith("http://") || uri.startsWith("https://")) {
+                intent = new Intent(Intent.ACTION_VIEW);
+                intent.setData(Uri.parse(uri));
+            }
         }
         if (intent != null && !(context instanceof Activity)) {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

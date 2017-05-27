@@ -11,6 +11,7 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.content.ContextCompat;
+import android.text.TextUtils;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -99,6 +100,8 @@ public final class RouterManager {
         if (!mInitialized) {
             throw new RuntimeException("Router must be initialize");
         }
+        if (TextUtils.isEmpty(uri))
+            throw new RuntimeException("Uri cannot be Empty");
         if (mRouteMeta == null || !uri.equals(mRouteMeta.getUri())) {
             mRouteMeta = getRouteMeta(uri);
             if (mRouteMeta != null) {
@@ -206,8 +209,15 @@ public final class RouterManager {
         if (context == null)
             context = mContext;
         Intent intent = getIntent(context);
-        if (intent != null && callback != null)
-            callback.onSuccess(mRouteMeta);
+        if (intent == null) {
+            if (callback != null) {
+                callback.onFailed(mRouteMeta, "Not Get Any Intent");
+            }
+            return;
+        } else {
+            if (callback != null)
+                callback.onSuccess(mRouteMeta);
+        }
         if (context instanceof Activity) {
             Activity activity = (Activity) context;
             Bundle options = mRouteMeta.getOptionsCompat() == null ? null : mRouteMeta.getOptionsCompat().toBundle();
