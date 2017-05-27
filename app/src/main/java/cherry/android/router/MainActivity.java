@@ -66,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.button_3).setOnClickListener(this);
         findViewById(R.id.button_4).setOnClickListener(this);
         findViewById(R.id.button_5).setOnClickListener(this);
+        findViewById(R.id.button_6).setOnClickListener(this);
     }
 
     @Override
@@ -126,6 +127,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                intent.setData(Uri.parse("http://m.baidu.com"));
 //                startActivity(intent);
                 Router.build("http://m.baidu.com").open();
+                break;
+            case R.id.button_6:
+                Router.destroy();
                 break;
         }
     }

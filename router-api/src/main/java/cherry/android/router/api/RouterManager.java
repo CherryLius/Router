@@ -69,6 +69,16 @@ public final class RouterManager {
         }
     }
 
+    synchronized void destroy() {
+        if (mInitialized) {
+            mRouterTable.clear();
+            mInterceptorMap.clear();
+            mInitialized = false;
+            mContext = null;
+            sInstance = null;
+        }
+    }
+
     private void addRoutePicker(@NonNull IRoutePicker picker) {
         picker.pick(mRouterTable);
     }

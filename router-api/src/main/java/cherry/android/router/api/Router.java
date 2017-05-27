@@ -35,6 +35,10 @@ public final class Router {
         return RouterManager.instance().build(uri);
     }
 
+    public static void destroy() {
+        RouterManager.instance().destroy();
+    }
+
     public interface RoutePicker {
         Map<String, Class<?>> pick();
     }
