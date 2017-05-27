@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public Map<String, Class<?>> pick() {
                         Map<String, Class<?>> map = new HashMap<>();
-                        map.put("/route2/activity", Route2Activity.class);
+                        map.put("route2/activity", Route2Activity.class);
                         return map;
                     }
                 });
@@ -99,7 +99,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Router.build("activity://cherry/route1?id=1&name=route1").open();
                 break;
             case R.id.button_3:
-                Router.build("/route2/activity").requestCode(100)
+                Router.build("route2/activity").requestCode(100)
                         .transition(R.anim.slide_in_bottom, R.anim.slide_out_bottom)
                         .open(this, new IRouteCallback() {
                             @Override
