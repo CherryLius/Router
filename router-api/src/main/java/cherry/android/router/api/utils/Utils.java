@@ -85,6 +85,8 @@ public class Utils {
     public static void fillRouteTable(Map<String, RouteMeta> routeTable, String uri, Class<?> destination,
                                       @RouteMeta.Type int type, String... interceptors) {
         if (!routeTable.containsKey(uri)) {
+            if (!Utils.checkRouteValid(uri))
+                throw new IllegalArgumentException("Invalid uri: " + uri);
             RouteMeta meta = Utils.findRouteMetaByClass(routeTable, destination);
             if (meta == null) {
                 meta = RouteMeta.newMeta(uri, destination, type, interceptors);

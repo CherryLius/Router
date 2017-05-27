@@ -77,6 +77,8 @@ public final class RouterManager {
         Map<String, Class<?>> map = picker.pick();
         if (map == null || map.isEmpty()) return;
         for (Map.Entry<String, Class<?>> entry : map.entrySet()) {
+            if (!Utils.checkRouteValid(entry.getKey()))
+                throw new IllegalArgumentException("invalid uri: " + entry.getKey());
             if (mRouterTable.containsKey(entry.getKey()))
                 continue;
             RouteMeta meta = Utils.findRouteMetaByClass(mRouterTable, entry.getValue());
