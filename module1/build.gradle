@@ -1,22 +1,27 @@
-apply plugin: 'com.android.application'
+println moduleBuild.toBoolean()
+if (moduleBuild.toBoolean())
+    apply plugin: 'com.android.library'
+else
+    apply plugin: 'com.android.application'
 apply plugin: 'com.neenbedankt.android-apt'
 
 android {
     compileSdkVersion 25
     buildToolsVersion "25.0.2"
+
     defaultConfig {
-        applicationId "cherry.android.router"
         minSdkVersion 21
         targetSdkVersion 25
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         javaCompileOptions {
             annotationProcessorOptions {
                 arguments = [ModuleName: project.getName()]
             }
         }
+
     }
     buildTypes {
         release {
@@ -24,6 +29,16 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    sourceSets {
+        main {
+            if (moduleBuild.toBoolean()) {
+                manifest.srcFile 'src/main/release/AndroidManifest.xml'
+            } else {
+                manifest.srcFile 'src/main/debug/AndroidManifest.xml'
+            }
+        }
+    }
+    resourcePrefix "module1_"
 }
 
 dependencies {
@@ -31,14 +46,10 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
+    compile 'com.android.support:appcompat-v7:25.3.1'
+    compile 'com.android.support.constraint:constraint-layout:1.0.2'
+    testCompile 'junit:junit:4.12'
     compile project(':router-annotations')
     compile project(':router-api')
     apt project(':router-compiler')
-    compile 'com.android.support:appcompat-v7:25.3.1'
-    compile 'com.android.support.constraint:constraint-layout:1.0.2'
-    compile 'com.android.support:support-v4:25.3.1'
-    compile 'com.android.support:design:25.3.1'
-    testCompile 'junit:junit:4.12'
-    if (moduleBuild.toBoolean())
-        compile project(':module1')
 }

@@ -86,8 +86,12 @@ public class RouterProccessor extends AbstractProcessor {
             return;
         }
         try {
-            parseRoute(upperCase(moduleName), roundEnv).generate().writeTo(processingEnv.getFiler());
-            parseInterceptor(upperCase(moduleName), roundEnv).generate().writeTo(processingEnv.getFiler());
+            RoutePickerGenerator routeGenerator = parseRoute(upperCase(moduleName), roundEnv);
+            if (routeGenerator != null)
+                routeGenerator.generate().writeTo(processingEnv.getFiler());
+            InterceptorGenerator interceptorGenerator = parseInterceptor(upperCase(moduleName), roundEnv);
+            if (interceptorGenerator != null)
+                interceptorGenerator.generate().writeTo(processingEnv.getFiler());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -95,8 +99,12 @@ public class RouterProccessor extends AbstractProcessor {
     }
 
     private RoutePickerGenerator parseRoute(String moduleName, RoundEnvironment roundEnv) {
+        Set<? extends Element> elementSet = roundEnv.getElementsAnnotatedWith(Route.class);
+        if (elementSet.isEmpty()) {
+            return null;
+        }
         RoutePickerGenerator routeGenerator = new RoutePickerGenerator(moduleName);
-        for (Element element : roundEnv.getElementsAnnotatedWith(Route.class)) {
+        for (Element element : elementSet) {
             if (checkInvalid(element)) {
                 routeGenerator.addRoute(new RouteClass((TypeElement) element,
                         processingEnv.getElementUtils(),
@@ -107,8 +115,12 @@ public class RouterProccessor extends AbstractProcessor {
     }
 
     private InterceptorGenerator parseInterceptor(String moduleName, RoundEnvironment roundEnv) {
+        Set<? extends Element> elementSet = roundEnv.getElementsAnnotatedWith(Interceptor.class);
+        if (elementSet.isEmpty()) {
+            return null;
+        }
         InterceptorGenerator interceptorGenerator = new InterceptorGenerator(moduleName);
-        for (Element element : roundEnv.getElementsAnnotatedWith(Interceptor.class)) {
+        for (Element element : elementSet) {
             interceptorGenerator.addInterceptor(new InterceptorClass((TypeElement) element));
         }
         return interceptorGenerator;

@@ -17,6 +17,7 @@ import android.widget.Toast;
 import java.util.HashMap;
 import java.util.Map;
 
+import cherry.android.router.api.IRouteCallback;
 import cherry.android.router.api.RouteMeta;
 import cherry.android.router.api.Router;
 import cherry.android.router.api.intercept.IInterceptor;
@@ -63,6 +64,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.button_1).setOnClickListener(this);
         findViewById(R.id.button_2).setOnClickListener(this);
         findViewById(R.id.button_3).setOnClickListener(this);
+        findViewById(R.id.button_4).setOnClickListener(this);
     }
 
     @Override
@@ -98,7 +100,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.button_3:
                 Router.build("/route2/activity").requestCode(100)
                         .transition(R.anim.slide_in_bottom, R.anim.slide_out_bottom)
-                        .open();
+                        .open(this, new IRouteCallback() {
+                            @Override
+                            public void onSuccess(RouteMeta routeMeta) {
+                                Logger.i("Test", "onSuccess");
+                            }
+
+                            @Override
+                            public void onIntercept(RouteMeta routeMeta) {
+                                Logger.e("Test", "onIntercept");
+                            }
+
+                            @Override
+                            public void onFailed(RouteMeta routeMeta, String reason) {
+                                Logger.e("Test", "onFailed");
+                            }
+                        });
+                break;
+            case R.id.button_4:
+                Router.build("module1://activity/main").open();
                 break;
         }
     }

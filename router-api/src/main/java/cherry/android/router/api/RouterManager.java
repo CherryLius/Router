@@ -177,15 +177,27 @@ public final class RouterManager {
     }
 
     public void open(Context context) {
+        open(context, null);
+    }
+
+    public void open(Context context, IRouteCallback callback) {
         if (mRouteMeta == null) {
             Logger.e(TAG, "open failed");
+            if (callback != null)
+                callback.onFailed(mRouteMeta, "open failed");
             return;
         }
         if (intercept(mRouteMeta)) {
             mRouteMeta.reset();
+            if (callback != null)
+                callback.onIntercept(mRouteMeta);
             return;
         }
+        if (context == null)
+            context = mContext;
         Intent intent = getIntent(context);
+        if (intent != null && callback != null)
+            callback.onSuccess(mRouteMeta);
         if (context instanceof Activity) {
             Activity activity = (Activity) context;
             Bundle options = mRouteMeta.getOptionsCompat() == null ? null : mRouteMeta.getOptionsCompat().toBundle();
