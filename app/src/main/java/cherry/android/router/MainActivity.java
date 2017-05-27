@@ -65,14 +65,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.button_2).setOnClickListener(this);
         findViewById(R.id.button_3).setOnClickListener(this);
         findViewById(R.id.button_4).setOnClickListener(this);
+        findViewById(R.id.button_5).setOnClickListener(this);
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.button_0:
-                Router.init(this);
                 Router.openLog(true, true);
+                Router.init(this);
                 Router.addRoutePicker(new Router.RoutePicker() {
                     @Override
                     public Map<String, Class<?>> pick() {
@@ -119,6 +120,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.button_4:
                 Router.build("module1://activity/main").open();
+                break;
+            case R.id.button_5:
+//                Intent intent = new Intent(Intent.ACTION_VIEW);
+//                intent.setData(Uri.parse("http://m.baidu.com"));
+//                startActivity(intent);
+                Router.build("http://m.baidu.com").open();
                 break;
         }
     }

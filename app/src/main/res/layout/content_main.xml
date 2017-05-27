@@ -48,6 +48,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="open Route Module1" />
+
+        <android.support.v7.widget.AppCompatButton
+            android:id="@+id/button_5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="https://m.baidu.com" />
     </LinearLayout>
 
 </android.support.v4.widget.NestedScrollView>

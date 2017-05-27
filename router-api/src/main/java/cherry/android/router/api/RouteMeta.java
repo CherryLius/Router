@@ -2,6 +2,8 @@ package cherry.android.router.api;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.PersistableBundle;
@@ -10,6 +12,8 @@ import android.support.v4.app.ActivityOptionsCompat;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -37,6 +41,7 @@ public class RouteMeta {
     private int enterAnim;
     private int exitAnim;
     private ActivityOptionsCompat optionsCompat;
+    private boolean ignoreInterceptor;
     @Type
     private int type = TYPE_MATCHER;
 
@@ -74,10 +79,6 @@ public class RouteMeta {
     void setUri(String uri) {
         this.uri = uri;
         parseQueryArgument();
-    }
-
-    int getType() {
-        return type;
     }
 
     Bundle getArgument() {
@@ -125,6 +126,14 @@ public class RouteMeta {
         return this.optionsCompat;
     }
 
+    void setIgnoreInterceptor(boolean ignore) {
+        this.ignoreInterceptor = ignore;
+    }
+
+    boolean isIgnoreInterceptor() {
+        return this.ignoreInterceptor;
+    }
+
     void reset() {
         if (arguments != null)
             arguments.clear();
@@ -132,6 +141,7 @@ public class RouteMeta {
         enterAnim = 0;
         exitAnim = 0;
         optionsCompat = null;
+        ignoreInterceptor = false;
     }
 
     private void parseQueryArgument() {
@@ -175,16 +185,65 @@ public class RouteMeta {
         return false;
     }
 
+    public Intent getIntent(Context context) {
+        if (this.type == TYPE_FRAGMENT)
+            return null;
+        Intent intent = null;
+        if (this.type == TYPE_ACTIVITY) {
+            intent = new Intent(context, this.destination);
+            intent.putExtras(this.arguments);
+        } else if (this.type == TYPE_MATCHER) {
+            intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse(uri));
+        }
+        if (intent != null && !(context instanceof Activity)) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        }
+        return intent;
+    }
+
+    public <T> T getFragment() {
+        if (this.type == TYPE_MATCHER || this.type == TYPE_ACTIVITY)
+            return null;
+        try {
+            Class<?> destination = this.destination;
+            if (!Fragment.class.isAssignableFrom(destination)
+                    && !android.support.v4.app.Fragment.class.isAssignableFrom(destination))
+                throw new IllegalArgumentException("parameter must be android.app.Fragment or android.support.v4.app.Fragment");
+            Constructor constructor = destination.getConstructor();
+            Object object = constructor.newInstance();
+            if (object instanceof Fragment) {
+                ((Fragment) object).setArguments(this.arguments);
+            } else if (object instanceof android.support.v4.app.Fragment) {
+                ((android.support.v4.app.Fragment) object).setArguments(this.arguments);
+            }
+            return (T) object;
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
     public static RouteMeta newMeta(String uri, Class<?> destination, String... interceptors) {
         return newMeta(uri, destination, getTypeByClass(destination), interceptors);
     }
 
     public static RouteMeta newMeta(String uri, Class<?> destination, @Type int type, String... interceptors) {
+        if (!Utils.checkRouteValid(uri))
+            throw new IllegalArgumentException("Uri format invalid: " + uri);
         RouteMeta routeMeta = new RouteMeta(uri, destination, type, interceptors);
         return routeMeta;
     }
 
     static int getTypeByClass(Class<?> destination) {
+        if (destination == null)
+            return TYPE_MATCHER;
         if (Activity.class.isAssignableFrom(destination)) {
             return TYPE_ACTIVITY;
         } else if (Fragment.class.isAssignableFrom(destination)

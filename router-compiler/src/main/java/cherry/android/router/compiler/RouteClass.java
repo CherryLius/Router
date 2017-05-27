@@ -47,24 +47,19 @@ public class RouteClass {
         StringBuilder metaBuilder = new StringBuilder();
         if (mInterceptors != null && mInterceptors.length > 0) {
             for (String interceptor : mInterceptors) {
-                metaBuilder
-                        .append(',')
+                metaBuilder.append(", ")
                         .append('\"')
                         .append(interceptor)
                         .append('\"');
             }
         }
-        String statement = String.format("routeTable.put($S, $T.newMeta($S, $T.class, $T.$N%s))", metaBuilder.toString());
-
+        String statement = String.format("$T.fillRouteTable(routeTable,$S, $T.class, $T.$N%s)", metaBuilder.toString());
         for (String uri : mUris) {
-            codeBuilder.beginControlFlow("if (!routeTable.containsKey($S))", uri)
-                    .addStatement(statement, uri,
-                            Values.ROUTE_META,
-                            uri,
-                            TypeName.get(mTypeElement.asType()),
-                            Values.ROUTE_META,
-                            type)
-                    .endControlFlow();
+            codeBuilder.addStatement(statement, Values.ROUTE_UTILS,
+                    uri,
+                    TypeName.get(mTypeElement.asType()),
+                    Values.ROUTE_META,
+                    type);
         }
         return codeBuilder.build();
     }

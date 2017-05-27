@@ -78,7 +78,7 @@ public final class RouterManager {
         for (Map.Entry<String, Class<?>> entry : map.entrySet()) {
             if (mRouterTable.containsKey(entry.getKey()))
                 continue;
-            RouteMeta meta = getRouteByClass(entry.getValue());
+            RouteMeta meta = Utils.findRouteMetaByClass(mRouterTable, entry.getValue());
             if (meta != null) {
                 mRouterTable.put(entry.getKey(), meta);
             } else {
@@ -104,6 +104,8 @@ public final class RouterManager {
             if (mRouteMeta != null) {
                 mRouteMeta.reset();
                 mRouteMeta.setUri(uri);
+            } else {
+                mRouteMeta = RouteMeta.newMeta(uri, null);
             }
         }
         return this;
@@ -112,13 +114,14 @@ public final class RouterManager {
     private RouteMeta getRouteMeta(String uri) {
         RouteMeta routeMeta = mRouterTable.get(uri);
         if (routeMeta == null) {
-            Logger.e(TAG, "uri invalid Route: " + uri);
-            //throw new IllegalStateException("uri invalid Route: " + uri);
+            Logger.e(TAG, "uri Not Found Route: " + uri);
         }
         return routeMeta;
     }
 
     boolean intercept(RouteMeta routeMeta) {
+        if (routeMeta.isIgnoreInterceptor())
+            return false;
         if (mGlobalInterceptor != null && mGlobalInterceptor.intercept(routeMeta)) {
             return true;
         }
@@ -168,6 +171,13 @@ public final class RouterManager {
     public RouterManager requestCode(int requestCode) {
         if (mRouteMeta != null) {
             mRouteMeta.setRequestCode(requestCode);
+        }
+        return this;
+    }
+
+    public RouterManager ignoreInterceptor(boolean ignore) {
+        if (mRouteMeta != null) {
+            mRouteMeta.setIgnoreInterceptor(ignore);
         }
         return this;
     }
@@ -259,61 +269,19 @@ public final class RouterManager {
         mRouteMeta.reset();
     }
 
-    public Intent getIntent() {
-        return getIntent(mContext);
-    }
-
     public Intent getIntent(Context context) {
         if (mRouteMeta == null) {
             Logger.e(TAG, "getIntent failed");
             return null;
         }
-        Intent intent = new Intent(context, mRouteMeta.getDestination());
-        intent.putExtras(mRouteMeta.getArgument());
-        if (!(context instanceof Activity)) {
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        }
-        return intent;
+        return mRouteMeta.getIntent(context);
     }
 
     public <T> T getFragment() {
         if (mRouteMeta == null) {
             return null;
         }
-        try {
-            Class<?> destination = mRouteMeta.getDestination();
-            if (!Fragment.class.isAssignableFrom(destination)
-                    && !android.support.v4.app.Fragment.class.isAssignableFrom(destination))
-                throw new IllegalArgumentException("parameter must be android.app.Fragment or android.support.v4.app.Fragment");
-            Constructor constructor = destination.getConstructor();
-            Object object = constructor.newInstance();
-            if (object instanceof Fragment) {
-                ((Fragment) object).setArguments(mRouteMeta.getArgument());
-            } else if (object instanceof android.support.v4.app.Fragment) {
-                ((android.support.v4.app.Fragment) object).setArguments(mRouteMeta.getArgument());
-            }
-            return (T) object;
-        } catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    private RouteMeta getRouteByClass(Class<?> cls) {
-        if (mRouterTable == null || mRouterTable.isEmpty())
-            return null;
-        for (RouteMeta route : mRouterTable.values()) {
-            if (route.getDestination().equals(cls)) {
-                return route;
-            }
-        }
-        return null;
+        return mRouteMeta.getFragment();
     }
 
     private void pickRouteTable(@NonNull String className) {

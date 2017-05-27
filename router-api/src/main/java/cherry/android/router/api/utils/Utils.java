@@ -13,7 +13,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import cherry.android.router.api.RouteMeta;
 import dalvik.system.DexFile;
 
 /**
@@ -56,6 +60,46 @@ public class Utils {
             return applicationInfo.sourceDir;
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
+        }
+        return null;
+    }
+
+    //^(\w+://)?([\w\-]+(\.[\w\-]+)*\/)*[\w\-]+(\.[\w\-]+)*\/?(:\d*)?(\?([\w\-\.,@?^=%&:\/~\+#]*)+)?
+    public static boolean checkRouteValid(String uri) {
+        if (uri == null || uri.trim().isEmpty())
+            return false;
+        uri = uri.trim();
+        String regex = "^(\\w+://)?([\\w\\-]+(\\.[\\w\\-]+)*\\/)*[\\w\\-]+(\\.[\\w\\-]+)*\\/?(:\\d*)?(\\?([\\w\\-\\.,@?^=%&:\\/~\\+#]*)+)?";
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(uri);
+        if (!matcher.matches()) {
+            Logger.e(TAG, "invalid uri format: " + uri);
+            return false;
+        }
+        while (matcher.find()) {
+            Logger.e(TAG, "uri match ====> " + matcher.group());
+        }
+        return true;
+    }
+
+    public static void fillRouteTable(Map<String, RouteMeta> routeTable, String uri, Class<?> destination,
+                                      @RouteMeta.Type int type, String... interceptors) {
+        if (!routeTable.containsKey(uri)) {
+            RouteMeta meta = Utils.findRouteMetaByClass(routeTable, destination);
+            if (meta == null) {
+                meta = RouteMeta.newMeta(uri, destination, type, interceptors);
+            }
+            routeTable.put(uri, meta);
+        }
+    }
+
+    public static RouteMeta findRouteMetaByClass(Map<String, RouteMeta> routeTable, Class<?> cls) {
+        if (routeTable == null || routeTable.isEmpty())
+            return null;
+        for (Map.Entry<String, RouteMeta> meta : routeTable.entrySet()) {
+            if (meta.getValue().getDestination().equals(cls)) {
+                return meta.getValue();
+            }
         }
         return null;
     }
