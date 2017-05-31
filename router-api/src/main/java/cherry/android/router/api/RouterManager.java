@@ -213,7 +213,6 @@ public final class RouterManager {
             return;
         }
         if (intercept(mRouteMeta)) {
-            mRouteMeta.reset();
             if (callback != null)
                 callback.onIntercept(mRouteMeta);
             return;
@@ -244,7 +243,6 @@ public final class RouterManager {
         } else {
             ContextCompat.startActivity(context, intent, null);
         }
-        mRouteMeta.reset();
     }
 
     public void open(Fragment fragment) {
@@ -253,7 +251,6 @@ public final class RouterManager {
             return;
         }
         if (intercept(mRouteMeta)) {
-            mRouteMeta.reset();
             return;
         }
         Intent intent = getIntent(fragment.getActivity());
@@ -266,7 +263,6 @@ public final class RouterManager {
         if (mRouteMeta.getEnterAnim() != 0 || mRouteMeta.getExitAnim() != 0) {
             fragment.getActivity().overridePendingTransition(mRouteMeta.getEnterAnim(), mRouteMeta.getExitAnim());
         }
-        mRouteMeta.reset();
     }
 
     public void open(android.support.v4.app.Fragment fragment) {
@@ -275,7 +271,6 @@ public final class RouterManager {
             return;
         }
         if (intercept(mRouteMeta)) {
-            mRouteMeta.reset();
             return;
         }
         Intent intent = getIntent(fragment.getActivity());
@@ -288,7 +283,6 @@ public final class RouterManager {
         if (mRouteMeta.getEnterAnim() != 0 || mRouteMeta.getExitAnim() != 0) {
             fragment.getActivity().overridePendingTransition(mRouteMeta.getEnterAnim(), mRouteMeta.getExitAnim());
         }
-        mRouteMeta.reset();
     }
 
     public Intent getIntent(Context context) {
