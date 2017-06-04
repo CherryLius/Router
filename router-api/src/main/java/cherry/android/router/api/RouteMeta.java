@@ -254,4 +254,12 @@ public class RouteMeta {
         }
         return TYPE_MATCHER;
     }
+
+    @Override
+    public String toString() {
+        return "RouteMeta{" +
+                "destination=" + destination +
+                ", uri='" + uri + '\'' +
+                '}';
+    }
 }

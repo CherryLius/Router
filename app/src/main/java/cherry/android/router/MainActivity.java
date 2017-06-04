@@ -2,6 +2,7 @@ package cherry.android.router;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Looper;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -14,6 +15,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.io.IOException;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,6 +25,7 @@ import cherry.android.router.api.RouteMeta;
 import cherry.android.router.api.Router;
 import cherry.android.router.api.intercept.IInterceptor;
 import cherry.android.router.api.utils.Logger;
+import dalvik.system.DexFile;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -74,6 +78,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         switch (v.getId()) {
             case R.id.button_0:
                 Router.openLog(true, true);
+                Router.openDebug();
                 Router.init(this);
                 Router.addRoutePicker(new Router.RoutePicker() {
                     @Override
@@ -139,6 +144,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 100) {
             Toast.makeText(this, "onActivityResult route2", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void scan() {
+        try {
+            Logger.e("Test", getPackageCodePath() + "," + getPackageResourcePath());
+            DexFile dexFile = new DexFile(getPackageResourcePath());
+            Enumeration<String> entries = dexFile.entries();
+            while (entries.hasMoreElements()) {
+                String name = entries.nextElement();
+                Logger.e("Test", "name=" + name);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            Logger.e("Test", "", e);
         }
     }
 }

@@ -3,14 +3,19 @@ package cherry.android.router.api.utils;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Looper;
 import android.os.Parcelable;
+import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +23,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import cherry.android.router.api.RouteMeta;
+import cherry.android.router.api.Router;
 import dalvik.system.DexFile;
 
 /**
@@ -29,39 +35,84 @@ public class Utils {
 
     public static List<String> getFileNameByPackage(Context context, String packageName) {
         List<String> classNames = new ArrayList<>();
-        String path = getSourcePaths(context);
-        if (path != null) {
-            DexFile dexFile;
-            try {
-                if (path.endsWith(".zip")) {
-                    dexFile = DexFile.loadDex(path, path + ".tmp", 0);
-                } else {
-                    dexFile = new DexFile(path);
-                }
-                Enumeration<String> enumeration = dexFile.entries();
-                while (enumeration.hasMoreElements()) {
-                    String className = enumeration.nextElement();
-                    if (className.contains(packageName)) {
-                        classNames.add(className);
+        List<String> sourcePaths = getSourcePaths(context);
+        for (String path : sourcePaths) {
+            if (path != null) {
+                DexFile dexFile;
+                try {
+                    if (path.endsWith(".zip")) {
+                        dexFile = DexFile.loadDex(path, path + ".tmp", 0);
+                    } else {
+                        dexFile = new DexFile(path);
                     }
+
+                    Enumeration<String> enumeration = dexFile.entries();
+                    while (enumeration.hasMoreElements()) {
+                        String className = enumeration.nextElement();
+                        if (className.contains(packageName)) {
+                            classNames.add(className);
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
         }
         return classNames;
     }
 
-    private static String getSourcePaths(Context context) {
+    private static List<String> getSourcePaths(Context context) {
+        List<String> sourcePaths = new ArrayList<>();
         try {
             ApplicationInfo applicationInfo = context.getPackageManager().getApplicationInfo(context.getPackageName(), 0);
-            File sourceApk = new File(applicationInfo.sourceDir);
-            Logger.i(TAG, "sourceApk=" + sourceApk);
-            return applicationInfo.sourceDir;
+            Logger.i(TAG, "sourceApk=" + applicationInfo.sourceDir);
+            sourcePaths.add(applicationInfo.sourceDir);
+
+            if (Router.debuggable()) { // Search instant run support only debuggable
+                sourcePaths.addAll(tryLoadInstantRunDexFile(applicationInfo));
+            }
         } catch (PackageManager.NameNotFoundException e) {
             e.printStackTrace();
         }
-        return null;
+        return sourcePaths;
+    }
+
+    /**
+     * Get instant run dex path, used to catch the branch usingApkSplits=false.
+     */
+    private static List<String> tryLoadInstantRunDexFile(ApplicationInfo applicationInfo) {
+        List<String> instantRunSourcePaths = new ArrayList<>();
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && null != applicationInfo.splitSourceDirs) {
+            // add the splite apk, normally for InstantRun, and newest version.
+            instantRunSourcePaths.addAll(Arrays.asList(applicationInfo.splitSourceDirs));
+            for (int i = 0; i < applicationInfo.splitSourceDirs.length; i++) {
+                Logger.i("Test", "split=" + applicationInfo.splitSourceDirs[i]);
+            }
+            Logger.d(TAG, "Found InstantRun support");
+        } else {
+            try {
+                // This man is reflection from Google instant run sdk, he will tell me where the dex files go.
+                Class pathsByInstantRun = Class.forName("com.android.tools.fd.runtime.Paths");
+                Method getDexFileDirectory = pathsByInstantRun.getMethod("getDexFileDirectory", String.class);
+                String instantRunDexPath = (String) getDexFileDirectory.invoke(null, applicationInfo.packageName);
+
+                File instantRunFilePath = new File(instantRunDexPath);
+                if (instantRunFilePath.exists() && instantRunFilePath.isDirectory()) {
+                    File[] dexFile = instantRunFilePath.listFiles();
+                    for (File file : dexFile) {
+                        if (null != file && file.exists() && file.isFile() && file.getName().endsWith(".dex")) {
+                            instantRunSourcePaths.add(file.getAbsolutePath());
+                        }
+                    }
+                    Logger.d(TAG, "Found InstantRun support");
+                }
+            } catch (Exception e) {
+                Logger.e(TAG, "InstantRun support error, " + e.getMessage());
+            }
+        }
+
+        return instantRunSourcePaths;
     }
 
     //^(\w+://)?([\w\-]+(\.[\w\-]+)*\/)*[\w\-]+(\.[\w\-]+)*\/?(:\d*)?(\?([\w\-\.,@?^=%&:\/~\+#]*)+)?

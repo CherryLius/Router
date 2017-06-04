@@ -14,6 +14,8 @@ import cherry.android.router.api.utils.Logger;
 
 public final class Router {
 
+    private static boolean debuggable = false;
+
     public static void init(@NonNull Context context) {
         RouterManager.instance().init(context);
     }
@@ -21,6 +23,15 @@ public final class Router {
     public static void openLog(boolean showLog, boolean showStackTrace) {
         Logger.showLog(showLog);
         Logger.showStackTrace(showStackTrace);
+    }
+
+    public static void openDebug() {
+        Logger.i("Test", BuildConfig.DEBUG + "");
+        debuggable = true;
+    }
+
+    public static boolean debuggable() {
+        return debuggable;
     }
 
     public static void addRoutePicker(@NonNull RoutePicker picker) {
@@ -36,6 +47,7 @@ public final class Router {
     }
 
     public static void destroy() {
+        debuggable = false;
         RouterManager.instance().destroy();
     }
 
