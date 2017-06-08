@@ -10,7 +10,7 @@ import cherry.android.router.annotations.RouteField;
 @Route(value = "activity://cherry/route1", interceptor = "route1")
 public class Route1Activity extends AppCompatActivity {
 
-    @RouteField(name = "id")
+    @RouteField(name = "id", nonNull = true)
     int mId = -1;
     @RouteField
     String value;

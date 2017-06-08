@@ -1,8 +1,11 @@
 package cherry.android.router.api.bundle;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
+import android.support.v4.app.Fragment;
 
 import java.io.Serializable;
 
@@ -14,7 +17,11 @@ public class FieldBundle {
     private Bundle mBundle;
     private Uri mUri;
 
-    public FieldBundle(Bundle bundle, Uri data) {
+    private FieldBundle(Bundle bundle) {
+        this.mBundle = bundle;
+    }
+
+    private FieldBundle(Bundle bundle, Uri data) {
         this.mBundle = bundle;
         this.mUri = data;
     }
@@ -141,6 +148,19 @@ public class FieldBundle {
         if (mBundle == null)
             return null;
         return (T) mBundle.getSerializable(key);
+    }
+
+    public static FieldBundle newBundle(Activity activity) {
+        Intent intent = activity.getIntent();
+        return new FieldBundle(intent.getExtras(), intent.getData());
+    }
+
+    public static FieldBundle newBundle(Fragment fragment) {
+        return new FieldBundle(fragment.getArguments());
+    }
+
+    public static FieldBundle newBundle(android.app.Fragment fragment) {
+        return new FieldBundle(fragment.getArguments());
     }
 
     private static <T> T castValue(Object object, T defaultValue, IParser<T> parser) {

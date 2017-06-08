@@ -1,5 +1,7 @@
 package cherry.android.router.compiler;
 
+import com.squareup.javapoet.TypeName;
+
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 
@@ -28,6 +30,18 @@ public class RoutingFiled {
 
     public String getFieldName() {
         return mFieldElement.getSimpleName().toString();
+    }
+
+    public TypeName getTypeName() {
+        return TypeName.get(mFieldElement.asType());
+    }
+
+    public String getKey() {
+        return mKeyName;
+    }
+
+    public boolean isNonNull() {
+        return mNonNull;
     }
 
 }

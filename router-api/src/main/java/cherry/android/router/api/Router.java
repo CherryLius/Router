@@ -26,7 +26,6 @@ public final class Router {
     }
 
     public static void openDebug() {
-        Logger.i("Test", BuildConfig.DEBUG + "");
         debuggable = true;
     }
 

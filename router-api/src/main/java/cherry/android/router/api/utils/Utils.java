@@ -215,4 +215,11 @@ public class Utils {
         }*/
         }
     }
+
+    public static void checkNonNull(Object object, String name, String className) {
+        if (object == null)
+            throw new NullPointerException(
+                    String.format("field '%s' in '%s' is nonNull",
+                            name, className));
+    }
 }

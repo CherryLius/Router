@@ -80,7 +80,7 @@ public class RouterProccessor extends AbstractProcessor {
         if (!roundEnv.processingOver()) {
             parseRouterTarget(roundEnv);
             parseRouteFieldTarget(roundEnv);
-//            throw new IllegalArgumentException("111");
+            throw new IllegalArgumentException("111");
         }
         return false;
     }

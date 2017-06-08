@@ -21,4 +21,8 @@ public interface Values {
 
     ClassName INTERCEPTOR_META = ClassName.get("cherry.android.router.api", "InterceptorMeta");
     ClassName ROUTE_UTILS = ClassName.get("cherry.android.router.api.utils", "Utils");
+
+    ClassName ROUTE_BUNDLE = ClassName.get("cherry.android.router.api.bundle", "FieldBundle");
+    ClassName ANDROID_OS_BUNDLE = ClassName.get("android.os", "Bundle");
+    ClassName ANDROID_OS_PARCELABLE = ClassName.get("android.os", "Parcelable");
 }
