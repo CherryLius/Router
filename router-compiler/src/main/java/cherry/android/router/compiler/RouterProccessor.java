@@ -5,6 +5,8 @@ import com.google.auto.service.AutoService;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.processing.AbstractProcessor;
@@ -19,7 +21,9 @@ import javax.tools.Diagnostic;
 
 import cherry.android.router.annotations.Interceptor;
 import cherry.android.router.annotations.Route;
+import cherry.android.router.annotations.RouteField;
 import cherry.android.router.compiler.generate.InterceptorGenerator;
+import cherry.android.router.compiler.generate.RouteFieldGenerator;
 import cherry.android.router.compiler.generate.RoutePickerGenerator;
 
 import static cherry.android.router.compiler.common.Values.ACTIVITY_CLASS_NAME;
@@ -67,6 +71,7 @@ public class RouterProccessor extends AbstractProcessor {
         Set<Class<? extends Annotation>> annotations = new HashSet<>();
         annotations.add(Route.class);
         annotations.add(Interceptor.class);
+        annotations.add(RouteField.class);
         return annotations;
     }
 
@@ -74,6 +79,7 @@ public class RouterProccessor extends AbstractProcessor {
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         if (!roundEnv.processingOver()) {
             parseRouterTarget(roundEnv);
+            parseRouteFieldTarget(roundEnv);
 //            throw new IllegalArgumentException("111");
         }
         return false;
@@ -125,6 +131,35 @@ public class RouterProccessor extends AbstractProcessor {
         }
         return interceptorGenerator;
     }
+
+    private void parseRouteFieldTarget(RoundEnvironment roundEnv) {
+        Map<String, RouteFieldGenerator> map = new LinkedHashMap<>();
+        for (Element element : roundEnv.getElementsAnnotatedWith(RouteField.class)) {
+            TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
+            RouteFieldGenerator generator = getRouteFieldGenerator(map, enclosingElement);
+            RoutingFiled field = new RoutingFiled(element);
+            generator.addRouteField(field);
+        }
+
+        try {
+            for (Map.Entry<String, RouteFieldGenerator> entry : map.entrySet()) {
+                entry.getValue().generate().writeTo(processingEnv.getFiler());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private RouteFieldGenerator getRouteFieldGenerator(Map<String, RouteFieldGenerator> map, TypeElement enclosingElement) {
+        String className = enclosingElement.getQualifiedName().toString();
+        RouteFieldGenerator generator = map.get(className);
+        if (generator == null) {
+            generator = new RouteFieldGenerator(processingEnv.getElementUtils(), enclosingElement);
+            map.put(className, generator);
+        }
+        return generator;
+    }
+
 
     private boolean checkInvalid(Element element) {
         if (element.getKind() != ElementKind.CLASS) {

@@ -6,9 +6,7 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.Looper;
 import android.os.Parcelable;
-import android.util.Log;
 
 import java.io.File;
 import java.io.IOException;
