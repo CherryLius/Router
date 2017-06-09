@@ -25,4 +25,5 @@ public interface Values {
     ClassName ROUTE_BUNDLE = ClassName.get("cherry.android.router.api.bundle", "FieldBundle");
     ClassName ANDROID_OS_BUNDLE = ClassName.get("android.os", "Bundle");
     ClassName ANDROID_OS_PARCELABLE = ClassName.get("android.os", "Parcelable");
+    String PARCELABLE_NAME = "android.os.Parcelable";
 }

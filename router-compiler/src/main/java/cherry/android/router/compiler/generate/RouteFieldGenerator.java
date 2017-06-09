@@ -11,10 +11,13 @@ import java.util.List;
 
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 
 import cherry.android.router.compiler.RoutingFiled;
 import cherry.android.router.compiler.common.Values;
+import cherry.android.router.compiler.util.Utils;
 
 /**
  * Created by Administrator on 2017/6/8.
@@ -23,10 +26,12 @@ import cherry.android.router.compiler.common.Values;
 public class RouteFieldGenerator implements IGenerator {
 
     private Elements mElementUtils;
+    private Types mTypeUtils;
     private TypeElement mClassElement;
     private List<RoutingFiled> mFieldList;
 
-    public RouteFieldGenerator(Elements elementUtils, TypeElement element) {
+    public RouteFieldGenerator(Types typeUtils, Elements elementUtils, TypeElement element) {
+        mTypeUtils = typeUtils;
         mElementUtils = elementUtils;
         mClassElement = element;
         mFieldList = new ArrayList<>();
@@ -83,10 +88,6 @@ public class RouteFieldGenerator implements IGenerator {
         return methodBuilder.build();
     }
 
-    private static TypeName getTypeName(Elements elementUtils, String type) {
-        return TypeName.get(elementUtils.getTypeElement(type).asType());
-    }
-
     private String getMethodName(RoutingFiled field) {
         String format = "get";
         TypeName fieldType = field.getTypeName();
@@ -105,22 +106,26 @@ public class RouteFieldGenerator implements IGenerator {
             format = "getLong";
         } else if (fieldType.equals(TypeName.SHORT)) {
             format = "getShort";
-        } else if (fieldType.equals(getTypeName(mElementUtils,
+        } else if (fieldType.equals(Utils.getTypeName(mElementUtils,
                 String.class.getCanonicalName()))) {
             format = "getString";
         } else if (fieldType.equals(TypeName.CHAR)) {
             format = "getCharacter";
-        } else if (fieldType.equals(getTypeName(mElementUtils,
-                CharSequence.class.getCanonicalName()))) {
-            format = "getCharSequence";
         } else if (fieldType.equals(Values.ANDROID_OS_BUNDLE)) {
             format = "getBundle";
-        } else if (fieldType.equals(Values.ANDROID_OS_PARCELABLE)) {
+        } else if (isSubType(field.asType(),
+                CharSequence.class.getCanonicalName())) {
+            format = "getCharSequence";
+        } else if (isSubType(field.asType(), Values.PARCELABLE_NAME)) {
             format = "getParcelable";
-        } else if (fieldType.equals(getTypeName(mElementUtils,
-                Serializable.class.getCanonicalName()))) {
+        } else if (isSubType(field.asType(), Serializable.class.getCanonicalName())) {
             format = "getSerializable";
         }
         return format;
+    }
+
+    private boolean isSubType(TypeMirror typeMirror, String type) {
+        return Utils.isSubType(mTypeUtils, typeMirror,
+                Utils.getTypeMirror(mElementUtils, type));
     }
 }

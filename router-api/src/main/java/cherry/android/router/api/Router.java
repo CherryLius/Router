@@ -1,8 +1,13 @@
 package cherry.android.router.api;
 
+import android.app.Activity;
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.v4.app.Fragment;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import cherry.android.router.api.intercept.IInterceptor;
@@ -14,6 +19,7 @@ import cherry.android.router.api.utils.Logger;
 
 public final class Router {
 
+    private static final String TAG = "Router";
     private static boolean debuggable = false;
 
     public static void init(@NonNull Context context) {
@@ -45,6 +51,18 @@ public final class Router {
         return RouterManager.instance().build(uri);
     }
 
+    public static void bind(Activity activity) {
+        createRouter(activity);
+    }
+
+    public static void bind(Fragment fragment) {
+        createRouter(fragment);
+    }
+
+    public static void bind(android.app.Fragment fragment) {
+        createRouter(fragment);
+    }
+
     public static void destroy() {
         debuggable = false;
         RouterManager.instance().destroy();
@@ -52,5 +70,51 @@ public final class Router {
 
     public interface RoutePicker {
         Map<String, Class<?>> pick();
+    }
+
+    private static final Map<Class<?>, Constructor<?>> ROUTERS = new LinkedHashMap<>();
+
+    private static void createRouter(Object target) {
+        Class<?> targetClass = target.getClass();
+        Constructor<?> constructor = findRouterConstructor(targetClass);
+        if (constructor == null) {
+            Logger.e(TAG, "No Constructor Find for " + targetClass.getName());
+            return;
+        }
+        try {
+            constructor.newInstance(target);
+        } catch (InstantiationException e) {
+            throw new RuntimeException("Unable to invoke " + constructor, e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException("Unable to invoke " + constructor, e);
+        } catch (InvocationTargetException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof RuntimeException) {
+                throw (RuntimeException) cause;
+            }
+            if (cause instanceof Error) {
+                throw (Error) cause;
+            }
+            throw new RuntimeException("Unable to create routing instance.", cause);
+        }
+    }
+
+    private static Constructor<?> findRouterConstructor(Class<?> targetClass) {
+        Constructor<?> constructor = ROUTERS.get(targetClass);
+        if (constructor != null)
+            return constructor;
+        String className = targetClass.getName();
+        Logger.i(TAG, "target class=" + className);
+        try {
+            Class<?> routerClass = Class.forName(className + "_Router");
+            constructor = routerClass.getConstructor(targetClass);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+            constructor = findRouterConstructor(targetClass.getSuperclass());
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException("Unable to find router constructor for " + className, e);
+        }
+        ROUTERS.put(targetClass, constructor);
+        return constructor;
     }
 }

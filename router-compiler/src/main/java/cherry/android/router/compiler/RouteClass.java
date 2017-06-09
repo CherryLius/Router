@@ -9,6 +9,7 @@ import javax.lang.model.util.Types;
 
 import cherry.android.router.annotations.Route;
 import cherry.android.router.compiler.common.Values;
+import cherry.android.router.compiler.util.Utils;
 
 /**
  * Created by Administrator on 2017/5/25.
@@ -65,6 +66,7 @@ public class RouteClass {
     }
 
     private boolean isSubType(String type) {
-        return mTypeUtils.isSubtype(mTypeElement.asType(), mElementUtils.getTypeElement(type).asType());
+        return Utils.isSubType(mTypeUtils, mTypeElement.asType(),
+                Utils.getTypeMirror(mElementUtils, type));
     }
 }

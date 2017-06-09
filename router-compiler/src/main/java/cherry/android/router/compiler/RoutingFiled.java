@@ -4,6 +4,7 @@ import com.squareup.javapoet.TypeName;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 
 import cherry.android.router.annotations.RouteField;
 
@@ -26,6 +27,10 @@ public class RoutingFiled {
         mNonNull = annotation.nonNull();
         if (mKeyName.isEmpty())
             mKeyName = getFieldName();
+    }
+
+    public TypeMirror asType() {
+        return mFieldElement.asType();
     }
 
     public String getFieldName() {

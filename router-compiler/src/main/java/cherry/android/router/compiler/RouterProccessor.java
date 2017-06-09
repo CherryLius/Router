@@ -80,7 +80,7 @@ public class RouterProccessor extends AbstractProcessor {
         if (!roundEnv.processingOver()) {
             parseRouterTarget(roundEnv);
             parseRouteFieldTarget(roundEnv);
-            throw new IllegalArgumentException("111");
+//            throw new IllegalArgumentException("111");
         }
         return false;
     }
@@ -154,7 +154,8 @@ public class RouterProccessor extends AbstractProcessor {
         String className = enclosingElement.getQualifiedName().toString();
         RouteFieldGenerator generator = map.get(className);
         if (generator == null) {
-            generator = new RouteFieldGenerator(processingEnv.getElementUtils(), enclosingElement);
+            generator = new RouteFieldGenerator(processingEnv.getTypeUtils(),
+                    processingEnv.getElementUtils(), enclosingElement);
             map.put(className, generator);
         }
         return generator;

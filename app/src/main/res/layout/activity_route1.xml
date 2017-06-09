@@ -12,4 +12,9 @@
         android:layout_height="wrap_content"
         android:text="Route1" />
 
+    <android.support.v7.widget.AppCompatTextView
+        android:id="@+id/textView_1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Route1" />
 </LinearLayout>

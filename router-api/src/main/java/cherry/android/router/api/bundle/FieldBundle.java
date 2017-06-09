@@ -42,6 +42,10 @@ public class FieldBundle {
         return object;
     }
 
+    public Object get(String key, Object value) {
+        return get(key);
+    }
+
     public int getInt(String key, int defaultValue) {
         return castValue(get(key), defaultValue, new IParser<Integer>() {
             @Override
@@ -132,19 +136,19 @@ public class FieldBundle {
         });
     }
 
-    public Bundle getBundle(String key) {
+    public Bundle getBundle(String key, Bundle value) {
         if (mBundle == null)
             return null;
         return mBundle.getBundle(key);
     }
 
-    public <T extends Parcelable> T getParcelable(String key) {
+    public <T extends Parcelable> T getParcelable(String key, T value) {
         if (mBundle == null)
             return null;
         return mBundle.getParcelable(key);
     }
 
-    public <T extends Serializable> T getSerializable(String key) {
+    public <T extends Serializable> T getSerializable(String key, T value) {
         if (mBundle == null)
             return null;
         return (T) mBundle.getSerializable(key);
