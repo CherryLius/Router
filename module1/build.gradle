@@ -4,6 +4,7 @@ if (moduleBuild.toBoolean())
 else
     apply plugin: 'com.android.application'
 apply plugin: 'com.neenbedankt.android-apt'
+apply plugin: 'router.plugin'
 
 android {
     compileSdkVersion 25
@@ -16,12 +17,6 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        javaCompileOptions {
-            annotationProcessorOptions {
-                arguments = [ModuleName: project.getName()]
-            }
-        }
-
     }
     buildTypes {
         release {

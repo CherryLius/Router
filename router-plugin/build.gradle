@@ -1,0 +1,96 @@
+apply plugin: 'groovy'
+apply plugin: 'maven'
+apply plugin: 'com.jfrog.bintray'
+
+dependencies {
+    //gradle sdk
+    compile gradleApi()
+    //groovy sdk
+    compile localGroovy()
+    compile 'com.android.tools.build:gradle:2.3.3'
+}
+
+repositories {
+    jcenter()
+    mavenCentral()
+}
+
+tasks.withType(Javadoc) {
+    options {
+        encoding 'UTF-8'
+        charSet 'UTF-8'
+        links "http://docs.oracle.com/javase/7/docs/api"
+    }
+}
+
+group = 'cherry.android.plugins'
+version = '1.0.0'
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: uri('F:/Android/repos'))
+        }
+    }
+}
+def siteUrl = 'https://github.com/CherryLius/Router'
+def gitUrl = 'https://github.com/CherryLius/Router.git'
+install {
+    repositories.mavenInstaller {
+        pom {
+            project {
+                packaging 'aar'
+
+                name 'router-plugin set annotationProcessorOptions arguments.'
+                url siteUrl
+
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'cherry'
+                        name 'cherry'
+                        email '767041809@qq.com'
+                    }
+                }
+                scm {
+                    connection gitUrl
+                    developerConnection gitUrl
+                    url siteUrl
+                }
+            }
+        }
+    }
+}
+task sourcesJar(type: Jar) {
+    from sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    from javadoc.destinationDir
+    classifier = 'javadoc'
+}
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+bintray {
+    user = properties.getProperty("bintray.user")
+    key = properties.getProperty("bintray.apikey")
+    configurations = ['archives']
+    pkg {
+        repo = 'Maven'
+        name = 'router-plugin'
+        websiteUrl = siteUrl
+        vcsUrl = gitUrl
+        licenses = ["Apache-2.0"]
+        publish = true
+    }
+}
