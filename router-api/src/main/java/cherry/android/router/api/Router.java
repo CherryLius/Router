@@ -21,6 +21,7 @@ public final class Router {
 
     private static final String TAG = "Router";
     private static boolean debuggable = false;
+    private static final Map<Class<?>, Constructor<?>> ROUTERS = new LinkedHashMap<>();
 
     public static void init(@NonNull Context context) {
         RouterManager.instance().init(context);
@@ -71,8 +72,6 @@ public final class Router {
     public interface RoutePicker {
         Map<String, Class<?>> pick();
     }
-
-    private static final Map<Class<?>, Constructor<?>> ROUTERS = new LinkedHashMap<>();
 
     private static void createRouter(Object target) {
         Class<?> targetClass = target.getClass();
