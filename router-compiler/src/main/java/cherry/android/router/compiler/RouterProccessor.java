@@ -21,10 +21,10 @@ import javax.tools.Diagnostic;
 
 import cherry.android.router.annotations.Interceptor;
 import cherry.android.router.annotations.Route;
-import cherry.android.router.annotations.RouteField;
+import cherry.android.router.annotations.Extra;
 import cherry.android.router.compiler.generate.InterceptorGenerator;
 import cherry.android.router.compiler.generate.RouteFieldGenerator;
-import cherry.android.router.compiler.generate.RoutePickerGenerator;
+import cherry.android.router.compiler.generate.RouteGenerator;
 
 import static cherry.android.router.compiler.common.Values.ACTIVITY_CLASS_NAME;
 import static cherry.android.router.compiler.common.Values.FRAGMENT_CLASS_NAME;
@@ -71,7 +71,7 @@ public class RouterProccessor extends AbstractProcessor {
         Set<Class<? extends Annotation>> annotations = new HashSet<>();
         annotations.add(Route.class);
         annotations.add(Interceptor.class);
-        annotations.add(RouteField.class);
+        annotations.add(Extra.class);
         return annotations;
     }
 
@@ -92,7 +92,7 @@ public class RouterProccessor extends AbstractProcessor {
             return;
         }
         try {
-            RoutePickerGenerator routeGenerator = parseRoute(upperCase(moduleName), roundEnv);
+            RouteGenerator routeGenerator = parseRoute(upperCase(moduleName), roundEnv);
             if (routeGenerator != null)
                 routeGenerator.generate().writeTo(processingEnv.getFiler());
             InterceptorGenerator interceptorGenerator = parseInterceptor(upperCase(moduleName), roundEnv);
@@ -104,15 +104,15 @@ public class RouterProccessor extends AbstractProcessor {
 
     }
 
-    private RoutePickerGenerator parseRoute(String moduleName, RoundEnvironment roundEnv) {
+    private RouteGenerator parseRoute(String moduleName, RoundEnvironment roundEnv) {
         Set<? extends Element> elementSet = roundEnv.getElementsAnnotatedWith(Route.class);
         if (elementSet.isEmpty()) {
             return null;
         }
-        RoutePickerGenerator routeGenerator = new RoutePickerGenerator(moduleName);
+        RouteGenerator routeGenerator = new RouteGenerator(moduleName);
         for (Element element : elementSet) {
             if (checkInvalid(element)) {
-                routeGenerator.addRoute(new RouteClass((TypeElement) element,
+                routeGenerator.add(new RouteClass((TypeElement) element,
                         processingEnv.getElementUtils(),
                         processingEnv.getTypeUtils()));
             }
@@ -127,14 +127,14 @@ public class RouterProccessor extends AbstractProcessor {
         }
         InterceptorGenerator interceptorGenerator = new InterceptorGenerator(moduleName);
         for (Element element : elementSet) {
-            interceptorGenerator.addInterceptor(new InterceptorClass((TypeElement) element));
+            interceptorGenerator.add(new InterceptorClass((TypeElement) element));
         }
         return interceptorGenerator;
     }
 
     private void parseRouteFieldTarget(RoundEnvironment roundEnv) {
         Map<String, RouteFieldGenerator> map = new LinkedHashMap<>();
-        for (Element element : roundEnv.getElementsAnnotatedWith(RouteField.class)) {
+        for (Element element : roundEnv.getElementsAnnotatedWith(Extra.class)) {
             TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
             RouteFieldGenerator generator = getRouteFieldGenerator(map, enclosingElement);
             RoutingFiled field = new RoutingFiled(element);

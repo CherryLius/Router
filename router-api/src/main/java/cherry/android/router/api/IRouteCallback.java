@@ -5,9 +5,9 @@ package cherry.android.router.api;
  */
 
 public interface IRouteCallback {
-    void onSuccess(RouteMeta routeMeta);
+    void onSuccess(Request request);
 
-    void onIntercept(RouteMeta routeMeta);
+    void onIntercept(Request request);
 
-    void onFailed(RouteMeta routeMeta, String reason);
+    void onFailed(Request request, String reason);
 }

@@ -6,16 +6,16 @@ import java.util.LinkedHashMap;
  * Created by Administrator on 2017/5/25.
  */
 
-public class RouteMap extends LinkedHashMap<String, RouteMeta> {
+public class RouteMap extends LinkedHashMap<String, RouteRule> {
 
     @Override
-    public RouteMeta put(String key, RouteMeta value) {
+    public RouteRule put(String key, RouteRule value) {
         key = parseUri(key);
         return super.put(key, value);
     }
 
     @Override
-    public RouteMeta get(Object key) {
+    public RouteRule get(Object key) {
         if (key instanceof String) {
             String uri = String.valueOf(key);
             return super.get(parseUri(uri));

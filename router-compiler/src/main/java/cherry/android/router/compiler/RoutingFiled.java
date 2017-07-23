@@ -6,7 +6,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
-import cherry.android.router.annotations.RouteField;
+import cherry.android.router.annotations.Extra;
 
 /**
  * Created by Administrator on 2017/6/8.
@@ -22,7 +22,7 @@ public class RoutingFiled {
             throw new IllegalStateException(String.format("Only field can be annotated with @%s",
                     RoutingFiled.class.getSimpleName()));
         mFieldElement = (VariableElement) element;
-        RouteField annotation = mFieldElement.getAnnotation(RouteField.class);
+        Extra annotation = mFieldElement.getAnnotation(Extra.class);
         mKeyName = annotation.name();
         mNonNull = annotation.nonNull();
         if (mKeyName.isEmpty())

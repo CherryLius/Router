@@ -6,12 +6,16 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 import cherry.android.router.api.intercept.IInterceptor;
 import cherry.android.router.api.utils.Logger;
+import cherry.android.router.api.utils.Utils;
 
 /**
  * Created by Administrator on 2017/5/24.
@@ -24,7 +28,7 @@ public final class Router {
     private static final Map<Class<?>, Constructor<?>> ROUTERS = new LinkedHashMap<>();
 
     public static void init(@NonNull Context context) {
-        RouterManager.instance().init(context);
+        RouterInternal.get().init(context);
     }
 
     public static void openLog(boolean showLog, boolean showStackTrace) {
@@ -41,15 +45,39 @@ public final class Router {
     }
 
     public static void addRoutePicker(@NonNull RoutePicker picker) {
-        RouterManager.instance().addRoutePicker(picker);
+        RouterInternal.get().addRoutePicker(picker);
     }
 
     public static void addGlobalInterceptor(IInterceptor interceptor) {
-        RouterManager.instance().addGlobalInterceptor(interceptor);
+        RouterInternal.get().addGlobalInterceptor(interceptor);
     }
 
-    public static RouterManager build(@NonNull String uri) {
-        return RouterManager.instance().build(uri);
+    public static RouterInternal build(@NonNull String uri) {
+        return RouterInternal.get().build(uri);
+    }
+
+    public static <T> T create(Class<T> service) {
+        Utils.validateServiceInterface(service);
+        return (T) Proxy.newProxyInstance(service.getClassLoader(), new Class[]{service},
+                new InvocationHandler() {
+                    @Override
+                    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                        Logger.i("Test", "method=" + method.getName());
+                        if (method.getDeclaringClass() == Object.class)
+                            return method.invoke(this, args);
+                        new ServiceMethod.Builder(method).build();
+                        return null;
+                    }
+                });
+    }
+
+    public static void destroy() {
+        debuggable = false;
+        RouterInternal.get().destroy();
+    }
+
+    public interface RoutePicker {
+        Map<String, Class<?>> pick();
     }
 
     public static void bind(Activity activity) {
@@ -62,15 +90,6 @@ public final class Router {
 
     public static void bind(android.app.Fragment fragment) {
         createRouter(fragment);
-    }
-
-    public static void destroy() {
-        debuggable = false;
-        RouterManager.instance().destroy();
-    }
-
-    public interface RoutePicker {
-        Map<String, Class<?>> pick();
     }
 
     private static void createRouter(Object target) {

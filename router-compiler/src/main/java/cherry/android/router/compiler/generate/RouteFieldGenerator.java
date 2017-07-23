@@ -23,7 +23,7 @@ import cherry.android.router.compiler.util.Utils;
  * Created by Administrator on 2017/6/8.
  */
 
-public class RouteFieldGenerator implements IGenerator {
+public class RouteFieldGenerator implements Generator<JavaFile> {
 
     private Elements mElementUtils;
     private Types mTypeUtils;

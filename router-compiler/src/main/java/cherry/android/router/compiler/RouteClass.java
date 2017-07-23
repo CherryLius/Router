@@ -9,13 +9,14 @@ import javax.lang.model.util.Types;
 
 import cherry.android.router.annotations.Route;
 import cherry.android.router.compiler.common.Values;
+import cherry.android.router.compiler.generate.Generator;
 import cherry.android.router.compiler.util.Utils;
 
 /**
  * Created by Administrator on 2017/5/25.
  */
 
-public class RouteClass {
+public class RouteClass implements Generator<CodeBlock> {
 
     private Types mTypeUtils;
     private Elements mElementUtils;
@@ -35,7 +36,8 @@ public class RouteClass {
         }
     }
 
-    public CodeBlock generateCode() {
+    @Override
+    public CodeBlock generate() {
         CodeBlock.Builder codeBuilder = CodeBlock.builder();
 
         String type = "TYPE_MATCHER";
@@ -54,12 +56,12 @@ public class RouteClass {
                         .append('\"');
             }
         }
-        String statement = String.format("$T.fillRouteTable(routeTable,$S, $T.class, $T.$N%s)", metaBuilder.toString());
+        String statement = String.format("$T.fillRouteTable(param,$S, $T.class, $T.$N%s)", metaBuilder.toString());
         for (String uri : mUris) {
             codeBuilder.addStatement(statement, Values.ROUTE_UTILS,
                     uri,
                     TypeName.get(mTypeElement.asType()),
-                    Values.ROUTE_META,
+                    Values.ROUTE_RULE,
                     type);
         }
         return codeBuilder.build();

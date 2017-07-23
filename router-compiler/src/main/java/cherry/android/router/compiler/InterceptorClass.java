@@ -7,12 +7,13 @@ import javax.lang.model.element.TypeElement;
 
 import cherry.android.router.annotations.Interceptor;
 import cherry.android.router.compiler.common.Values;
+import cherry.android.router.compiler.generate.Generator;
 
 /**
  * Created by Administrator on 2017/5/25.
  */
 
-public class InterceptorClass {
+public class InterceptorClass implements Generator<CodeBlock> {
 
     private TypeElement mTypeElement;
     private String mName;
@@ -29,9 +30,10 @@ public class InterceptorClass {
         return TypeName.get(mTypeElement.asType());
     }
 
-    public CodeBlock generateCode() {
+    @Override
+    public CodeBlock generate() {
         CodeBlock.Builder codeBuilder = CodeBlock.builder();
-        codeBuilder.addStatement("interceptors.put($S, new $T($T.class, $S, $L))",
+        codeBuilder.addStatement("param.put($S, new $T($T.class, $S, $L))",
                 mName, Values.INTERCEPTOR_META, getTypeName(), mName, mPriority);
         return codeBuilder.build();
     }

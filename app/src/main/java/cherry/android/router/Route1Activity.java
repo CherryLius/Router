@@ -5,17 +5,17 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.TextView;
 
 import cherry.android.router.annotations.Route;
-import cherry.android.router.annotations.RouteField;
+import cherry.android.router.annotations.Extra;
 import cherry.android.router.api.Router;
 
 @Route(value = "activity://cherry/route1", interceptor = "route1")
 public class Route1Activity extends AppCompatActivity {
 
-    @RouteField(name = "id", nonNull = true)
+    @Extra(name = "id", nonNull = true)
     int mId = -1;
-    @RouteField(nonNull = true)
+    @Extra
     String name;
-    @RouteField
+    @Extra
     Object object;
 
     @Override

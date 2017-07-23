@@ -5,9 +5,11 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.support.annotation.IntDef;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityOptionsCompat;
 
 import java.lang.annotation.Retention;
@@ -26,9 +28,9 @@ import cherry.android.router.api.utils.Utils;
  * Created by Administrator on 2017/5/25.
  */
 
-public class RouteMeta {
+public class RouteRule {
 
-    private static final String TAG = "RouteMeta";
+    private static final String TAG = "RouteRule";
 
     public static final int TYPE_ACTIVITY = 0x01;
     public static final int TYPE_FRAGMENT = 0x02;
@@ -53,15 +55,15 @@ public class RouteMeta {
     public @interface Type {
     }
 
-    RouteMeta(String uri, Class<?> destination) {
+    RouteRule(String uri, Class<?> destination) {
         this(uri, destination, TYPE_MATCHER);
     }
 
-    RouteMeta(String uri, Class<?> destination, @Type int type) {
+    RouteRule(String uri, Class<?> destination, @Type int type) {
         this(uri, destination, type, null);
     }
 
-    RouteMeta(String uri, Class<?> destination, @Type int type, String[] interceptorNames) {
+    RouteRule(String uri, Class<?> destination, @Type int type, String[] interceptorNames) {
         this.uri = uri;
         this.destination = destination;
         this.type = type;
@@ -93,6 +95,7 @@ public class RouteMeta {
         arguments.putAll(value);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     void putExtra(PersistableBundle value) {
         arguments.putAll(value);
     }
@@ -232,15 +235,15 @@ public class RouteMeta {
         return null;
     }
 
-    public static RouteMeta newMeta(String uri, Class<?> destination, String... interceptors) {
-        return newMeta(uri, destination, getTypeByClass(destination), interceptors);
+    public static RouteRule newRequest(String uri, Class<?> destination, String... interceptors) {
+        return newRequest(uri, destination, getTypeByClass(destination), interceptors);
     }
 
-    public static RouteMeta newMeta(String uri, Class<?> destination, @Type int type, String... interceptors) {
+    public static RouteRule newRequest(String uri, Class<?> destination, @Type int type, String... interceptors) {
         if (!Utils.checkRouteValid(uri))
             throw new IllegalArgumentException("Uri format invalid: " + uri);
-        RouteMeta routeMeta = new RouteMeta(uri, destination, type, interceptors);
-        return routeMeta;
+        RouteRule routeRule = new RouteRule(uri, destination, type, interceptors);
+        return routeRule;
     }
 
     static int getTypeByClass(Class<?> destination) {
@@ -257,7 +260,7 @@ public class RouteMeta {
 
     @Override
     public String toString() {
-        return "RouteMeta{" +
+        return "RouteRule{" +
                 "destination=" + destination +
                 ", uri='" + uri + '\'' +
                 '}';

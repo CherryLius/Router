@@ -7,10 +7,13 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,7 +23,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import cherry.android.router.api.RouteMeta;
+import cherry.android.router.api.Picker;
+import cherry.android.router.api.RouteRule;
 import cherry.android.router.api.Router;
 import dalvik.system.DexFile;
 
@@ -131,23 +135,23 @@ public class Utils {
         return true;
     }
 
-    public static void fillRouteTable(Map<String, RouteMeta> routeTable, String uri, Class<?> destination,
-                                      @RouteMeta.Type int type, String... interceptors) {
+    public static void fillRouteTable(Map<String, RouteRule> routeTable, String uri, Class<?> destination,
+                                      @RouteRule.Type int type, String... interceptors) {
         if (!routeTable.containsKey(uri)) {
             if (!Utils.checkRouteValid(uri))
                 throw new IllegalArgumentException("Invalid uri: " + uri);
-            RouteMeta meta = Utils.findRouteMetaByClass(routeTable, destination);
-            if (meta == null) {
-                meta = RouteMeta.newMeta(uri, destination, type, interceptors);
+            RouteRule rule = Utils.findRouteRuleByClass(routeTable, destination);
+            if (rule == null) {
+                rule = RouteRule.newRule(uri, destination, type, interceptors);
             }
-            routeTable.put(uri, meta);
+            routeTable.put(uri, rule);
         }
     }
 
-    public static RouteMeta findRouteMetaByClass(Map<String, RouteMeta> routeTable, Class<?> cls) {
+    public static RouteRule findRouteRuleByClass(Map<String, RouteRule> routeTable, Class<?> cls) {
         if (routeTable == null || routeTable.isEmpty())
             return null;
-        for (Map.Entry<String, RouteMeta> meta : routeTable.entrySet()) {
+        for (Map.Entry<String, RouteRule> meta : routeTable.entrySet()) {
             if (meta.getValue().getDestination().equals(cls)) {
                 return meta.getValue();
             }
@@ -180,7 +184,12 @@ public class Utils {
         } else if (value instanceof Byte) {
             bundle.putByte(key, (Byte) value);
         } else if (value instanceof IBinder) {
-            bundle.putBinder(key, (IBinder) value);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                bundle.putBinder(key, (IBinder) value);
+            } else {
+                throw new UnsupportedOperationException("Bundle cannot put Binder, sdk version is Lower than "
+                        + Build.VERSION_CODES.JELLY_BEAN_MR2);
+            }
         } else if (value instanceof Parcelable) {
             bundle.putParcelable(key, (Parcelable) value);
         } else if (value instanceof Serializable) {
@@ -221,5 +230,37 @@ public class Utils {
             throw new NullPointerException(
                     String.format("field '%s' in '%s' is nonNull",
                             name, className));
+    }
+
+    public static Picker getPicker(@NonNull String className) {
+        try {
+            Class<?> cls = Class.forName(className);
+            Constructor constructor = cls.getConstructor();
+            return (Picker) constructor.newInstance();
+        } catch (ClassNotFoundException e) {
+            Logger.e(TAG, "ClassNotFound", e);
+            throw new IllegalStateException("Class Not Found", e);
+        } catch (NoSuchMethodException e) {
+            Logger.e(TAG, "NoSuchMethodException", e);
+        } catch (IllegalAccessException e) {
+            Logger.e(TAG, "IllegalAccessException", e);
+        } catch (InstantiationException e) {
+            Logger.e(TAG, "InstantiationException", e);
+        } catch (InvocationTargetException e) {
+            Logger.e(TAG, "InvocationTargetException", e);
+        }
+        throw new IllegalArgumentException("cant newInstance by class: " + className);
+    }
+
+    public static <T> void validateServiceInterface(Class<T> service) {
+        if (!service.isInterface()) {
+            throw new IllegalArgumentException("API declarations must be interfaces.");
+        }
+        // Prevent API interfaces from extending other interfaces. This not only avoids a bug in
+        // Android (http://b.android.com/58753) but it forces composition of API declarations which is
+        // the recommended pattern.
+        if (service.getInterfaces().length > 0) {
+            throw new IllegalArgumentException("API interfaces must not extend other interfaces.");
+        }
     }
 }

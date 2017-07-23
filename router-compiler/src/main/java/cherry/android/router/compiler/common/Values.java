@@ -13,10 +13,11 @@ public interface Values {
     String FRAGMENT_CLASS_NAME = "android.app.Fragment";
     String SUPPORT_V4_FRAGMENT_CLASS_NAME = "android.support.v4.app.Fragment";
 
-    ClassName ROUTER_PICKER = ClassName.get("cherry.android.router.api", "IRoutePicker");
-    ClassName INTERCEPTOR_PICKER = ClassName.get("cherry.android.router.api", "InterceptorPicker");
+//    ClassName ROUTER_PICKER = ClassName.get("cherry.android.router.api", "IRoutePicker");
+//    ClassName INTERCEPTOR_PICKER = ClassName.get("cherry.android.router.api", "InterceptorPicker");
+    ClassName PICKER = ClassName.get("cherry.android.router.api", "Picker");
     ClassName INTERCEPTOR = ClassName.get("cherry.android.router.api.intercept", "IInterceptor");
-    ClassName ROUTE_META = ClassName.get("cherry.android.router.api", "RouteMeta");
+    ClassName ROUTE_RULE = ClassName.get("cherry.android.router.api", "RouteRule");
     ClassName ROUTE_META_TYPE = ClassName.get("cherry.android.router.api", "RouteMeta", "Type");
 
     ClassName INTERCEPTOR_META = ClassName.get("cherry.android.router.api", "InterceptorMeta");

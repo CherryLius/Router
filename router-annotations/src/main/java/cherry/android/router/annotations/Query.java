@@ -7,13 +7,11 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Created by Administrator on 2017/6/8.
+ * Created by LHEE on 2017/7/22.
  */
-@Retention(RetentionPolicy.SOURCE)
-@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.PARAMETER)
 @Documented
-public @interface RouteField {
-    String name() default "";
-
-    boolean nonNull() default false;
+public @interface Query {
+    String value();
 }

@@ -2,7 +2,6 @@ package cherry.android.router;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Looper;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -15,17 +14,15 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import java.io.IOException;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
 import cherry.android.router.api.IRouteCallback;
-import cherry.android.router.api.RouteMeta;
+import cherry.android.router.api.Request;
+import cherry.android.router.api.RouteRule;
 import cherry.android.router.api.Router;
 import cherry.android.router.api.intercept.IInterceptor;
 import cherry.android.router.api.utils.Logger;
-import dalvik.system.DexFile;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -90,8 +87,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 });
                 Router.addGlobalInterceptor(new IInterceptor() {
                     @Override
-                    public boolean intercept(RouteMeta routeMeta) {
-                        Logger.w("Test", "intercept on global: " + routeMeta.getDestination());
+                    public boolean intercept(RouteRule routeRule) {
+                        Logger.w("Test", "intercept on global: " + routeRule.getDestination());
                         return false;
                     }
                 });
@@ -109,23 +106,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         .transition(R.anim.slide_in_bottom, R.anim.slide_out_bottom)
                         .open(this, new IRouteCallback() {
                             @Override
-                            public void onSuccess(RouteMeta routeMeta) {
+                            public void onSuccess(Request request) {
                                 Logger.i("Test", "onSuccess");
                             }
 
                             @Override
-                            public void onIntercept(RouteMeta routeMeta) {
+                            public void onIntercept(Request request) {
                                 Logger.e("Test", "onIntercept");
                             }
 
                             @Override
-                            public void onFailed(RouteMeta routeMeta, String reason) {
+                            public void onFailed(Request request, String reason) {
                                 Logger.e("Test", "onFailed");
                             }
                         });
                 break;
             case R.id.button_4:
-                Router.build("module1://activity/main").open();
+//                Router.build("module1://activity/main").open();
+                ActivityService service = Router.create(ActivityService.class);
+                service.startActivity("123456", 10);
                 break;
             case R.id.button_5:
 //                Intent intent = new Intent(Intent.ACTION_VIEW);
@@ -144,21 +143,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 100) {
             Toast.makeText(this, "onActivityResult route2", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void scan() {
-        try {
-            Logger.e("Test", getPackageCodePath() + "," + getPackageResourcePath());
-            DexFile dexFile = new DexFile(getPackageResourcePath());
-            Enumeration<String> entries = dexFile.entries();
-            while (entries.hasMoreElements()) {
-                String name = entries.nextElement();
-                Logger.e("Test", "name=" + name);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            Logger.e("Test", "", e);
         }
     }
 }
