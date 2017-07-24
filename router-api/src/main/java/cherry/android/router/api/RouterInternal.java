@@ -177,6 +177,32 @@ public final class RouterInternal {
         return this;
     }
 
+    RouteRule getRouteRule(@NonNull String uri) {
+        return mRouterTable.get(uri);
+    }
+
+
+    public void request(Request request) {
+        if (intercept(request)) {
+            return;
+        }
+        Intent intent = request.getIntent(mContext);
+        if (mContext instanceof Activity) {
+            Activity activity = (Activity) mContext;
+            Bundle options = request.getOptionsCompat() == null ? null : request.getOptionsCompat().toBundle();
+            if (request.getRequestCode() == -1) {
+                ActivityCompat.startActivity(activity, intent, options);
+            } else {
+                ActivityCompat.startActivityForResult(activity, intent, request.getRequestCode(), options);
+            }
+            if (request.getEnterAnim() != 0 || request.getExitAnim() != 0) {
+                activity.overridePendingTransition(request.getEnterAnim(), request.getExitAnim());
+            }
+        } else {
+            ContextCompat.startActivity(mContext, intent, null);
+        }
+    }
+
     public void open() {
         open(mContext);
     }

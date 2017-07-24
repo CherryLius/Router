@@ -8,13 +8,17 @@ import android.util.Log;
  */
 
 public final class Logger {
-    private static String sTagPrefix = "Router.";
+    private static String sTag = "Router.";
     private static boolean sLoggable = false;
     private static boolean sTraceStack = false;
 
-    public static void setPrefixTag(String prefix) {
-        if (!TextUtils.isEmpty(prefix))
-            sTagPrefix = prefix;
+    public static void setTag(String tag) {
+        if (!TextUtils.isEmpty(tag)) {
+            if (sTag.endsWith("."))
+                sTag = tag;
+            else
+                sTag = tag + ".";
+        }
     }
 
     public static void showLog(boolean show) {
@@ -27,7 +31,7 @@ public final class Logger {
 
     public static void i(String tag, String msg) {
         if (sLoggable)
-            Log.i(sTagPrefix + tag, buildMessage(msg));
+            Log.i(sTag + tag, buildMessage(msg));
     }
 
     public static void i(String tag, String format, Object... args) {
@@ -36,7 +40,7 @@ public final class Logger {
 
     public static void d(String tag, String msg) {
         if (sLoggable)
-            Log.d(sTagPrefix + tag, buildMessage(msg));
+            Log.d(sTag + tag, buildMessage(msg));
     }
 
     public static void d(String tag, String format, Object... args) {
@@ -45,7 +49,7 @@ public final class Logger {
 
     public static void v(String tag, String msg) {
         if (sLoggable)
-            Log.v(sTagPrefix + tag, buildMessage(msg));
+            Log.v(sTag + tag, buildMessage(msg));
     }
 
     public static void v(String tag, String format, Object... args) {
@@ -54,7 +58,7 @@ public final class Logger {
 
     public static void w(String tag, String msg) {
         if (sLoggable)
-            Log.w(sTagPrefix + tag, buildMessage(msg));
+            Log.w(sTag + tag, buildMessage(msg));
     }
 
     public static void w(String tag, String format, Object... args) {
@@ -63,7 +67,7 @@ public final class Logger {
 
     public static void e(String tag, String msg) {
         if (sLoggable)
-            Log.e(sTagPrefix + tag, buildMessage(msg));
+            Log.e(sTag + tag, buildMessage(msg));
     }
 
     public static void e(String tag, String format, Object... args) {
@@ -72,7 +76,7 @@ public final class Logger {
 
     public static void e(String tag, String msg, Throwable t) {
         if (sLoggable)
-            Log.e(sTagPrefix + tag, buildMessage(msg), t);
+            Log.e(sTag + tag, buildMessage(msg), t);
     }
 
     private static String buildMessage(String msg) {

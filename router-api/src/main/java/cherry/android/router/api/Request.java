@@ -39,6 +39,7 @@ public class Request {
     public Request(@NonNull RouteRule rule) {
         this.rule = rule;
         this.destination = rule.getDestination();
+        this.arguments = new Bundle();
     }
 
     public Request(@NonNull String uri, @NonNull RouteRule rule) {
@@ -47,6 +48,11 @@ public class Request {
         this.destination = rule.getDestination();
         this.arguments = new Bundle();
         parseQueryArgument();
+    }
+
+    public Request(Class<?> destination) {
+        this.destination = destination;
+        this.arguments = new Bundle();
     }
 
     void putExtra(String key, Object value) {

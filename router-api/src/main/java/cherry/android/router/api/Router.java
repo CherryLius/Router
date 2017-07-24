@@ -10,6 +10,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -26,6 +27,7 @@ public final class Router {
     private static final String TAG = "Router";
     private static boolean debuggable = false;
     private static final Map<Class<?>, Constructor<?>> ROUTERS = new LinkedHashMap<>();
+    private static final Map<Method, ServiceMethod> SERVICE_METHOD = new LinkedHashMap<>();
 
     public static void init(@NonNull Context context) {
         RouterInternal.get().init(context);
@@ -56,19 +58,50 @@ public final class Router {
         return RouterInternal.get().build(uri);
     }
 
-    public static <T> T create(Class<T> service) {
+    public static <T> T create(final Class<T> service) {
         Utils.validateServiceInterface(service);
         return (T) Proxy.newProxyInstance(service.getClassLoader(), new Class[]{service},
                 new InvocationHandler() {
                     @Override
                     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                        Logger.i("Test", "method=" + method.getName());
+                        StringBuilder builder = new StringBuilder();
+                        builder.append(service.getSimpleName())
+                                .append(".")
+                                .append(method.getName())
+                                .append('(');
+                        for (int i = 0; i < args.length; i++) {
+                            builder.append(args[i]);
+                            if (i < args.length - 1)
+                                builder.append(", ");
+                        }
+                        builder.append(')')
+                                .append("::")
+                                .append(method.getGenericReturnType());
+                        Logger.i(TAG, "[Call] " + builder.toString());
                         if (method.getDeclaringClass() == Object.class)
                             return method.invoke(this, args);
-                        new ServiceMethod.Builder(method).build();
-                        return null;
+                        Request request = getServiceMethod(method, args).toRequest();
+                        Type returnType = method.getGenericReturnType();
+                        Logger.i(TAG, "returnType=" + returnType);
+                        if (returnType.equals(void.class)) {
+                            RouterInternal.get().request(request);
+                            return null;
+                        } else if (returnType.equals(Request.class)) {
+                            RouterInternal.get().request(request);
+                            return request;
+                        }
+                        throw new UnsupportedOperationException("Only void and Request return is Supported.");
                     }
                 });
+    }
+
+    private static ServiceMethod getServiceMethod(Method method, Object[] args) {
+        ServiceMethod serviceMethod = SERVICE_METHOD.get(method);
+        if (serviceMethod != null)
+            return serviceMethod;
+        serviceMethod = new ServiceMethod.Builder(method, args).build();
+        SERVICE_METHOD.put(method, serviceMethod);
+        return serviceMethod;
     }
 
     public static void destroy() {
@@ -102,9 +135,9 @@ public final class Router {
         try {
             constructor.newInstance(target);
         } catch (InstantiationException e) {
-            throw new RuntimeException("Unable to invoke " + constructor, e);
+            throw new RuntimeException("Unable to toRequest " + constructor, e);
         } catch (IllegalAccessException e) {
-            throw new RuntimeException("Unable to invoke " + constructor, e);
+            throw new RuntimeException("Unable to toRequest " + constructor, e);
         } catch (InvocationTargetException e) {
             Throwable cause = e.getCause();
             if (cause instanceof RuntimeException) {

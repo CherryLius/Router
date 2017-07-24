@@ -99,7 +99,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
             case R.id.button_2:
-                Router.build("activity://cherry/route1?id=1&name=route1").open();
+//                Router.build("activity://cherry/route1?id=1&name=route1").open();
+                ActivityService activityService = Router.create(ActivityService.class);
+                activityService.startActivity("动态代理", 1222, false, 1);
                 break;
             case R.id.button_3:
                 Router.build("route2/activity").requestCode(100)
@@ -122,9 +124,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         });
                 break;
             case R.id.button_4:
-//                Router.build("module1://activity/main").open();
-                ActivityService service = Router.create(ActivityService.class);
-                service.startActivity("123456", 10);
+                Router.build("module1://activity/main").open();
+//                ActivityService service = Router.create(ActivityService.class);
+//                service.startActivity("123456", 10, true, 333);
                 break;
             case R.id.button_5:
 //                Intent intent = new Intent(Intent.ACTION_VIEW);
