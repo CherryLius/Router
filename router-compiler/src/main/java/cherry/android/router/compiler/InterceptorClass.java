@@ -34,7 +34,7 @@ public class InterceptorClass implements Generator<CodeBlock> {
     public CodeBlock generate() {
         CodeBlock.Builder codeBuilder = CodeBlock.builder();
         codeBuilder.addStatement("param.put($S, new $T($T.class, $S, $L))",
-                mName, Values.INTERCEPTOR_META, getTypeName(), mName, mPriority);
+                mName, Values.ROUTE_INTERCEPTOR, getTypeName(), mName, mPriority);
         return codeBuilder.build();
     }
 

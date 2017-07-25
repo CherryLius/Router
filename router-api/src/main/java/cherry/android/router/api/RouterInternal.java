@@ -1,8 +1,6 @@
 package cherry.android.router.api;
 
 import android.annotation.TargetApi;
-import android.app.Activity;
-import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
@@ -10,9 +8,7 @@ import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
-import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 
 import java.util.LinkedHashMap;
@@ -20,6 +16,11 @@ import java.util.List;
 import java.util.Map;
 
 import cherry.android.router.api.intercept.IInterceptor;
+import cherry.android.router.api.request.AbstractRequest;
+import cherry.android.router.api.request.ActionRequest;
+import cherry.android.router.api.request.ActivityRequest;
+import cherry.android.router.api.request.FragmentRequest;
+import cherry.android.router.api.request.Request;
 import cherry.android.router.api.utils.Logger;
 import cherry.android.router.api.utils.Utils;
 
@@ -37,14 +38,14 @@ public final class RouterInternal {
     private static RouterInternal sInstance;
 
     private Map<String, RouteRule> mRouterTable = new RouteMap();
-    private Map<String, InterceptorMeta> mInterceptorMap = new LinkedHashMap<>();
+    private Map<String, RouteInterceptor> mInterceptorMap = new LinkedHashMap<>();
     private IInterceptor mGlobalInterceptor;
     private boolean mInitialized;
     private Context mContext;
 
     private Request mRequest;
 
-    static RouterInternal get() {
+    public static RouterInternal get() {
         if (sInstance == null)
             synchronized (RouterInternal.class) {
                 if (sInstance == null)
@@ -109,19 +110,34 @@ public final class RouterInternal {
         if (TextUtils.isEmpty(uri))
             throw new RuntimeException("Uri cannot be Empty");
         RouteRule rule = mRouterTable.get(uri);
-        if (rule == null)
-            throw new NullPointerException("Uri Can Not Find Route:" + uri);
-        mRequest = new Request(uri, rule);
+        mRequest = generateRequest(rule, uri);
         return this;
     }
 
-    private boolean intercept(ActivityRequest request) {
-        if (request.isIgnoreInterceptor())
+    private Request generateRequest(RouteRule rule, String uri) {
+        if (rule != null) {
+            if (rule.getType() == RouteRule.TYPE_FRAGMENT) {
+                return new FragmentRequest(uri, rule);
+            } else if (rule.getType() == RouteRule.TYPE_ACTIVITY) {
+                return new ActivityRequest(uri, rule);
+            }
+            Logger.w(TAG, "rule uri:" + rule.getUri());
+        }
+        Logger.w(TAG, "generate Action, Uri Cannot Find Route:" + uri);
+        return new ActionRequest.Builder().setAction(Intent.ACTION_VIEW).setUri(uri).build();
+    }
+
+    private boolean intercept(Request request) {
+        if (!(request instanceof ActivityRequest)) {
+            return false;
+        }
+        final ActivityRequest activityRequest = (ActivityRequest) request;
+        if (activityRequest.isIgnoreInterceptor())
             return false;
         if (mGlobalInterceptor != null && mGlobalInterceptor.intercept(request)) {
             return true;
         }
-        RouteRule rule = request.getRule();
+        RouteRule rule = activityRequest.getRule();
         if (rule == null)
             return false;
         rule.findInterceptors(mInterceptorMap);
@@ -129,7 +145,7 @@ public final class RouterInternal {
             Logger.w(TAG, "interceptor List is Empty");
             return false;
         }
-        for (InterceptorMeta meta : rule.getInterceptors()) {
+        for (RouteInterceptor meta : rule.getInterceptors()) {
             if (meta.getInterceptor().intercept(request)) {
                 return true;
             }
@@ -204,101 +220,59 @@ public final class RouterInternal {
     }
 
 
-    Context getContext() {
+    public Context getContext() {
         return mContext;
-    }
-
-    public void request(Request request) {
-        if (request instanceof ActivityRequest && intercept((ActivityRequest) request)) {
-            return;
-        }
-        Intent intent = request.invoke();
-        Bundle options = request.getOptionsCompat() == null ? null : request.getOptionsCompat().toBundle();
-        if (mContext instanceof Activity) {
-            Activity activity = (Activity) mContext;
-            if (request.getRequestCode() == -1) {
-                ActivityCompat.startActivity(activity, intent, options);
-            } else {
-                ActivityCompat.startActivityForResult(activity, intent, request.getRequestCode(), options);
-            }
-            if (request.getEnterAnim() != 0 || request.getExitAnim() != 0) {
-                activity.overridePendingTransition(request.getEnterAnim(), request.getExitAnim());
-            }
-        } else {
-            ContextCompat.startActivity(mContext, intent, options);
-        }
     }
 
     public void open() {
         open(mContext);
     }
 
-    public void open(Context context) {
-        open(context, null);
-    }
-
     public void open(Context context, IRouteCallback callback) {
-        if (mRequest == null) {
-            Logger.e(TAG, "open failed");
-            if (callback != null)
-                callback.onFailed(mRequest, "open failed");
-            return;
-        }
-        if (intercept(mRequest)) {
-            if (callback != null)
-                callback.onIntercept(mRequest);
-            return;
-        }
-        if (context == null)
-            context = mContext;
-        Intent intent = getIntent(context);
-        if (intent == null) {
-            if (callback != null) {
-                callback.onFailed(mRequest, "Not Get Any Intent");
-            }
-            return;
-        } else {
-            if (callback != null)
-                callback.onSuccess(mRequest);
-        }
-        Bundle options = mRequest.getOptionsCompat() == null ? null : mRequest.getOptionsCompat().toBundle();
-        if (context instanceof Activity) {
-            Activity activity = (Activity) context;
-            if (mRequest.getRequestCode() == -1) {
-                ActivityCompat.startActivity(activity, intent, options);
-            } else {
-                ActivityCompat.startActivityForResult(activity, intent, mRequest.getRequestCode(), options);
-            }
-            if (mRequest.getEnterAnim() != 0 || mRequest.getExitAnim() != 0) {
-                activity.overridePendingTransition(mRequest.getEnterAnim(), mRequest.getExitAnim());
-            }
-        } else {
-            ContextCompat.startActivity(context, intent, options);
-        }
+//        if (mRequest == null) {
+//            Logger.e(TAG, "open failed");
+//            if (callback != null)
+//                callback.onFailed(mRequest, "open failed");
+//            return;
+//        }
+//        if (intercept(mRequest)) {
+//            if (callback != null)
+//                callback.onIntercept(mRequest);
+//            return;
+//        }
+//        mRequest.request();
+//        if (context == null)
+//            context = mContext;
+//        Intent intent = getIntent(context);
+//        if (intent == null) {
+//            if (callback != null) {
+//                callback.onFailed(mRequest, "Not Get Any Intent");
+//            }
+//            return;
+//        } else {
+//            if (callback != null)
+//                callback.onSuccess(mRequest);
+//        }
+//        Bundle options = mRequest.getOptionsCompat() == null ? null : mRequest.getOptionsCompat().toBundle();
+//        if (context instanceof Activity) {
+//            Activity activity = (Activity) context;
+//            if (mRequest.getRequestCode() == -1) {
+//                ActivityCompat.startActivity(activity, intent, options);
+//            } else {
+//                ActivityCompat.startActivityForResult(activity, intent, mRequest.getRequestCode(), options);
+//            }
+//            if (mRequest.getEnterAnim() != 0 || mRequest.getExitAnim() != 0) {
+//                activity.overridePendingTransition(mRequest.getEnterAnim(), mRequest.getExitAnim());
+//            }
+//        } else {
+//            ContextCompat.startActivity(context, intent, options);
+//        }
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
-    public void open(Fragment fragment) {
-        if (mRequest == null) {
-            Logger.e(TAG, "open failed");
-            return;
-        }
-        if (intercept(mRequest)) {
-            return;
-        }
-        Intent intent = getIntent(fragment.getActivity());
-        Bundle options = mRequest.getOptionsCompat() == null ? null : mRequest.getOptionsCompat().toBundle();
-        if (mRequest.getRequestCode() == -1) {
-            fragment.startActivity(intent, options);
-        } else {
-            fragment.startActivityForResult(intent, mRequest.getRequestCode(), options);
-        }
-        if (mRequest.getEnterAnim() != 0 || mRequest.getExitAnim() != 0) {
-            fragment.getActivity().overridePendingTransition(mRequest.getEnterAnim(), mRequest.getExitAnim());
-        }
-    }
-
-    public void open(android.support.v4.app.Fragment fragment) {
+    public <T> void open(T t) {
+        if (!Utils.isFragment(t.getClass()) && !Utils.isActivity(t.getClass())
+                && !t.getClass().equals(Context.class))
+            throw new IllegalArgumentException("Only Support Activity Fragment and Context");
         if (mRequest == null) {
             Logger.e(TAG, "open failed");
             return;
@@ -306,30 +280,15 @@ public final class RouterInternal {
         if (intercept(mRequest)) {
             return;
         }
-        Intent intent = getIntent(fragment.getActivity());
-        Bundle options = mRequest.getOptionsCompat() == null ? null : mRequest.getOptionsCompat().toBundle();
-        if (mRequest.getRequestCode() == -1) {
-            fragment.startActivity(intent, options);
-        } else {
-            fragment.startActivityForResult(intent, mRequest.getRequestCode(), options);
-        }
-        if (mRequest.getEnterAnim() != 0 || mRequest.getExitAnim() != 0) {
-            fragment.getActivity().overridePendingTransition(mRequest.getEnterAnim(), mRequest.getExitAnim());
-        }
+        ActivityRequest activityRequest = (ActivityRequest) mRequest;
+        activityRequest.setHost(t);
+        activityRequest.request();
     }
 
-    public Intent getIntent(Context context) {
+    public <T> T invoke() {
         if (mRequest == null) {
-            Logger.e(TAG, "getIntent failed");
-            return null;
+            throw new NullPointerException("request Null");
         }
-        return mRequest.getIntent(context);
-    }
-
-    public <T> T getFragment() {
-        if (mRequest == null) {
-            return null;
-        }
-        return mRequest.getFragment();
+        return (T) mRequest.invoke();
     }
 }

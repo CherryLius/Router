@@ -1,6 +1,7 @@
-package cherry.android.router.api;
+package cherry.android.router.api.request;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.support.annotation.NonNull;
@@ -10,7 +11,7 @@ import android.text.TextUtils;
  * Created by ROOT on 2017/7/25.
  */
 
-public class ActionRequest extends AbstractRequest<Intent> {
+public class ActionRequest extends ActivityRequest {
 
     private String action;
     private String type;
@@ -22,21 +23,25 @@ public class ActionRequest extends AbstractRequest<Intent> {
         this.type = builder.type;
     }
 
-    void setData(@NonNull String uri) {
+    public void setData(@NonNull String uri) {
         this.uri = uri;
     }
 
     @Override
     public Intent invoke() {
+        final Context context = getContext();
         Intent intent = new Intent(this.action);
         if (!TextUtils.isEmpty(this.type))
             intent.setType(this.type);
         if (!TextUtils.isEmpty(this.uri))
             intent.setData(Uri.parse(this.uri));
         intent.putExtras(this.arguments);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        if (intent != null && !(context instanceof Activity)) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        }
         return intent;
     }
+
 
     public static class Builder {
         private String action;

@@ -1,7 +1,5 @@
 package cherry.android.router.api;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 
@@ -14,6 +12,13 @@ import cherry.android.router.annotations.ClassName;
 import cherry.android.router.annotations.Query;
 import cherry.android.router.annotations.URL;
 import cherry.android.router.annotations.Uri;
+import cherry.android.router.api.adapter.RequestAdapter;
+import cherry.android.router.api.adapter.RouteAdapter;
+import cherry.android.router.api.request.AbstractRequest;
+import cherry.android.router.api.request.ActionRequest;
+import cherry.android.router.api.request.ActivityRequest;
+import cherry.android.router.api.request.FragmentRequest;
+import cherry.android.router.api.request.Request;
 import cherry.android.router.api.utils.Logger;
 import cherry.android.router.api.utils.Utils;
 
@@ -73,9 +78,9 @@ import cherry.android.router.api.utils.Utils;
         if (rule == null)
             throw new NullPointerException("RouteRule Not Found in Route Table: " + url);
         if (rule.getType() == RouteRule.TYPE_ACTIVITY)
-            return new ActivityRequest(rule);
+            return new ActivityRequest(url, rule);
         else
-            return new FragmentRequest(rule);
+            return new FragmentRequest(url, rule);
     }
 
     private Request classRequest(Parameter<Object, Object>[] parameters) {

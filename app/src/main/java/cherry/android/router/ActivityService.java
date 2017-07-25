@@ -4,10 +4,11 @@ import android.content.Intent;
 
 import cherry.android.router.annotations.Action;
 import cherry.android.router.annotations.ClassName;
+import cherry.android.router.annotations.Options;
 import cherry.android.router.annotations.Query;
 import cherry.android.router.annotations.URL;
 import cherry.android.router.annotations.Uri;
-import cherry.android.router.api.Request;
+import cherry.android.router.api.request.Request;
 
 /**
  * Created by LHEE on 2017/7/22.
@@ -30,6 +31,10 @@ public interface ActivityService {
     void route1();
 
     @URL("activity://cherry/route2")
+    @Options(requestCode = 100,
+            ignoreIntercepter = true,
+            enterAnim = R.anim.slide_in_bottom,
+            exitAnim = R.anim.slide_out_bottom)
     void route2();
 
     @URL("module1://activity/main")
@@ -43,4 +48,8 @@ public interface ActivityService {
 
     @Action(Intent.ACTION_VIEW)
     void goUrl(@Uri String url);
+
+    @Action(Intent.ACTION_VIEW)
+    void sendSms(@Uri String uri,
+                 @Query("sms_body") String body);
 }

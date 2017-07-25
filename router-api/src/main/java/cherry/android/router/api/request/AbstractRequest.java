@@ -1,4 +1,4 @@
-package cherry.android.router.api;
+package cherry.android.router.api.request;
 
 import android.net.Uri;
 import android.os.Build;
@@ -7,6 +7,7 @@ import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 
+import cherry.android.router.api.RouteRule;
 import cherry.android.router.api.utils.Utils;
 
 /**
@@ -44,20 +45,26 @@ public abstract class AbstractRequest<T> implements Request<T> {
         }
     }
 
+    @Override
+    public String getUri() {
+        return this.uri;
+    }
+
+    @Override
     public Class<?> getDestination() {
         return destination;
     }
 
-    void putExtra(String key, Object value) {
+    public void putExtra(String key, Object value) {
         Utils.putValue2Bundle(arguments, key, value);
     }
 
-    void putExtra(Bundle value) {
+    public void putExtra(Bundle value) {
         arguments.putAll(value);
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    void putExtra(PersistableBundle value) {
+    public void putExtra(PersistableBundle value) {
         arguments.putAll(value);
     }
 }

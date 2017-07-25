@@ -26,7 +26,7 @@ public class InterceptorGenerator extends PickerGenerator<InterceptorClass> {
     @Override
     TypeName getGenericType() {
         ParameterizedTypeName mapType = ParameterizedTypeName.get(ClassName.get(Map.class),
-                ClassName.get(String.class), Values.INTERCEPTOR_META);
+                ClassName.get(String.class), Values.ROUTE_INTERCEPTOR);
         return mapType;
     }
 }

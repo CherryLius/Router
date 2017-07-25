@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import cherry.android.router.api.IRouteCallback;
-import cherry.android.router.api.Request;
+import cherry.android.router.api.request.Request;
 import cherry.android.router.api.Router;
 import cherry.android.router.api.intercept.IInterceptor;
 import cherry.android.router.api.utils.Logger;
@@ -105,7 +105,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.button_3:
                 Router.build("route2/activity").requestCode(100)
                         .transition(R.anim.slide_in_bottom, R.anim.slide_out_bottom)
-                        .open(this, new IRouteCallback() {
+                        .open(this/*, new IRouteCallback() {
                             @Override
                             public void onSuccess(Request request) {
                                 Logger.i("Test", "onSuccess");
@@ -120,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             public void onFailed(Request request, String reason) {
                                 Logger.e("Test", "onFailed");
                             }
-                        });
+                        }*/);
                 break;
             case R.id.button_4:
                 Router.build("module1://activity/main").open();

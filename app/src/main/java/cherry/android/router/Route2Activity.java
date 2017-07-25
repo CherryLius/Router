@@ -19,7 +19,7 @@ public class Route2Activity extends AppCompatActivity implements View.OnClickLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_route2);
         findViewById(R.id.button_0).setOnClickListener(this);
-        fragment = Router.build("fragment://blank").getFragment();
+        fragment = Router.build("fragment://blank").invoke();
     }
 
     @Override

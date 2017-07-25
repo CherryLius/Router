@@ -1,4 +1,6 @@
-package cherry.android.router.api;
+package cherry.android.router.api.adapter;
+
+import cherry.android.router.api.request.Request;
 
 /**
  * Created by ROOT on 2017/7/25.

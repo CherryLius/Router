@@ -68,15 +68,18 @@ public final class Router {
                                 .append(".")
                                 .append(method.getName())
                                 .append('(');
-                        for (int i = 0; i < args.length; i++) {
-                            builder.append(args[i]);
-                            if (i < args.length - 1)
-                                builder.append(", ");
+                        if (args != null) {
+                            for (int i = 0; i < args.length; i++) {
+                                builder.append(args[i]);
+                                if (i < args.length - 1)
+                                    builder.append(", ");
+                            }
                         }
                         builder.append(')')
                                 .append("::")
                                 .append(method.getGenericReturnType());
                         Logger.i(TAG, "[Call] " + builder.toString());
+                        Logger.e(TAG, "args=" + args);
                         if (method.getDeclaringClass() == Object.class)
                             return method.invoke(this, args);
                         return getServiceMethod(method, args).request();

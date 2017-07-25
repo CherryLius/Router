@@ -12,13 +12,13 @@ import cherry.android.router.api.intercept.IInterceptor;
  * Created by Administrator on 2017/5/26.
  */
 
-public class InterceptorMeta implements Comparable<InterceptorMeta> {
+public class RouteInterceptor implements Comparable<RouteInterceptor> {
     private String name;
     private int priority;
     private Class<? extends IInterceptor> interceptor;
     private IInterceptor mInterceptor;
 
-    public InterceptorMeta(@NonNull Class<? extends IInterceptor> interceptor, String name, int priority) {
+    public RouteInterceptor(@NonNull Class<? extends IInterceptor> interceptor, String name, int priority) {
         this.interceptor = interceptor;
         this.name = name;
         this.priority = priority;
@@ -55,7 +55,7 @@ public class InterceptorMeta implements Comparable<InterceptorMeta> {
     }
 
     @Override
-    public int compareTo(@NonNull InterceptorMeta o) {
+    public int compareTo(@NonNull RouteInterceptor o) {
         if (this.priority != o.priority) {
             return this.priority - o.priority;
         }

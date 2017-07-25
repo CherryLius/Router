@@ -26,7 +26,7 @@ public class RouteRule {
     private String uri;
     private Class<?> destination;
     private String[] interceptorNames;
-    private List<InterceptorMeta> interceptorList;
+    private List<RouteInterceptor> interceptorList;
 
     @Type
     private int type = TYPE_MATCHER;
@@ -59,7 +59,7 @@ public class RouteRule {
         return this.destination;
     }
 
-    List<InterceptorMeta> getInterceptors() {
+    List<RouteInterceptor> getInterceptors() {
         return this.interceptorList;
     }
 
@@ -69,7 +69,7 @@ public class RouteRule {
     }
 
 
-    void findInterceptors(Map<String, InterceptorMeta> interceptors) {
+    void findInterceptors(Map<String, RouteInterceptor> interceptors) {
         if (interceptors == null || interceptors.isEmpty())
             return;
         if (this.interceptorNames == null || this.interceptorNames.length == 0)
@@ -77,7 +77,7 @@ public class RouteRule {
         if (interceptorList == null)
             interceptorList = new ArrayList<>();
         for (String name : interceptorNames) {
-            InterceptorMeta meta = interceptors.get(name);
+            RouteInterceptor meta = interceptors.get(name);
             if (meta != null && !interceptorList.contains(meta)) {
                 interceptorList.add(meta);
             }

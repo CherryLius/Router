@@ -7,7 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 
-import cherry.android.router.api.Request;
+import cherry.android.router.api.request.Request;
 import cherry.android.router.api.Router;
 import cherry.android.router.api.utils.Logger;
 
@@ -55,6 +55,7 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
                 service.getFragment();
                 service.getFragmentByClass();
                 service.goUrl("http://m.baidu.com");
+//                service.sendSms("sms:", "SMSSS");
                 break;
         }
     }

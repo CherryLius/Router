@@ -1,11 +1,10 @@
 package cherry.android.router.api;
 
-import android.content.Intent;
-import android.net.Uri;
 import android.text.TextUtils;
 
+import cherry.android.router.api.request.AbstractRequest;
+import cherry.android.router.api.request.ActionRequest;
 import cherry.android.router.api.utils.Logger;
-import cherry.android.router.api.utils.Utils;
 
 /**
  * Created by LHEE on 2017/7/23.

@@ -1,16 +1,12 @@
-package cherry.android.router.api;
+package cherry.android.router.api.request;
 
-import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
-import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
+import cherry.android.router.api.RouteRule;
 import cherry.android.router.api.utils.Utils;
 
 /**
@@ -18,10 +14,6 @@ import cherry.android.router.api.utils.Utils;
  */
 
 public class FragmentRequest<T> extends AbstractRequest<T> {
-    private Class<?> destination;
-    private String uri;
-    private Bundle arguments;
-    private boolean ignoreInterceptor;
 
     public FragmentRequest(@NonNull RouteRule rule) {
         super(rule);
@@ -58,5 +50,10 @@ public class FragmentRequest<T> extends AbstractRequest<T> {
             e.printStackTrace();
         }
         throw new UnsupportedOperationException("cannot create Fragment with uri=" + this.uri);
+    }
+
+    @Override
+    public void request() {
+
     }
 }
