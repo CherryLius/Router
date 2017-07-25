@@ -19,7 +19,6 @@ import java.util.Map;
 
 import cherry.android.router.api.IRouteCallback;
 import cherry.android.router.api.Request;
-import cherry.android.router.api.RouteRule;
 import cherry.android.router.api.Router;
 import cherry.android.router.api.intercept.IInterceptor;
 import cherry.android.router.api.utils.Logger;
@@ -87,8 +86,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 });
                 Router.addGlobalInterceptor(new IInterceptor() {
                     @Override
-                    public boolean intercept(RouteRule routeRule) {
-                        Logger.w("Test", "intercept on global: " + routeRule.getDestination());
+                    public boolean intercept(Request request) {
+                        Logger.w("Test", "intercept on global: " + request.getDestination());
                         return false;
                     }
                 });

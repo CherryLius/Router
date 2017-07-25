@@ -1,6 +1,7 @@
 package cherry.android.router.api;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.text.TextUtils;
 
 import cherry.android.router.api.utils.Logger;
@@ -35,16 +36,29 @@ import cherry.android.router.api.utils.Utils;
         }
     }
 
-    static class QueryIntent<R> extends Parameter<Intent, R> {
+    static class QueryRequest<R> extends Parameter<AbstractRequest, R> {
 
-        QueryIntent(String name) {
+        QueryRequest(String name) {
             super(name);
         }
 
         @Override
-        void apply(Intent intent, R args) {
+        void apply(AbstractRequest request, R args) {
             if (args != null)
-                Utils.putValue2Bundle(intent.getExtras(), name, args);
+                request.putExtra(name, args);
+        }
+    }
+
+    static class UriRequest<R> extends Parameter<ActionRequest, R> {
+
+        UriRequest(String name) {
+            super("uri=" + name);
+        }
+
+        @Override
+        void apply(ActionRequest request, R args) {
+            if (args != null)
+                request.setData(args.toString());
         }
     }
 }

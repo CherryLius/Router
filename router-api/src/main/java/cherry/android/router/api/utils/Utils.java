@@ -1,5 +1,7 @@
 package cherry.android.router.api.utils;
 
+import android.app.Activity;
+import android.app.Fragment;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -27,6 +29,10 @@ import cherry.android.router.api.Picker;
 import cherry.android.router.api.RouteRule;
 import cherry.android.router.api.Router;
 import dalvik.system.DexFile;
+
+import static cherry.android.router.api.RouteRule.TYPE_ACTIVITY;
+import static cherry.android.router.api.RouteRule.TYPE_FRAGMENT;
+import static cherry.android.router.api.RouteRule.TYPE_MATCHER;
 
 /**
  * Created by Administrator on 2017/5/25.
@@ -151,9 +157,9 @@ public class Utils {
     public static RouteRule findRouteRuleByClass(Map<String, RouteRule> routeTable, Class<?> cls) {
         if (routeTable == null || routeTable.isEmpty())
             return null;
-        for (Map.Entry<String, RouteRule> meta : routeTable.entrySet()) {
-            if (meta.getValue().getDestination().equals(cls)) {
-                return meta.getValue();
+        for (Map.Entry<String, RouteRule> entry : routeTable.entrySet()) {
+            if (entry.getValue().getDestination().equals(cls)) {
+                return entry.getValue();
             }
         }
         return null;
@@ -262,5 +268,37 @@ public class Utils {
         if (service.getInterfaces().length > 0) {
             throw new IllegalArgumentException("API interfaces must not extend other interfaces.");
         }
+    }
+
+    public static boolean checkValidDestination(Class<?> destination) {
+        if (isActivity(destination) || isFragment(destination)) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isActivity(Class<?> destination) {
+        if (destination == null)
+            return false;
+        return Activity.class.isAssignableFrom(destination);
+    }
+
+    public static boolean isFragment(Class<?> destination) {
+        if (destination == null)
+            return false;
+        return Fragment.class.isAssignableFrom(destination)
+                || android.support.v4.app.Fragment.class.isAssignableFrom(destination);
+    }
+
+    @RouteRule.Type
+    public static int getDestinationType(Class<?> destination) {
+        if (destination == null)
+            return TYPE_MATCHER;
+        if (isActivity(destination)) {
+            return TYPE_ACTIVITY;
+        } else if (isFragment(destination)) {
+            return TYPE_FRAGMENT;
+        }
+        return TYPE_MATCHER;
     }
 }

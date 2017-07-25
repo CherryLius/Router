@@ -1,7 +1,12 @@
 package cherry.android.router;
 
+import android.content.Intent;
+
+import cherry.android.router.annotations.Action;
+import cherry.android.router.annotations.ClassName;
 import cherry.android.router.annotations.Query;
 import cherry.android.router.annotations.URL;
+import cherry.android.router.annotations.Uri;
 import cherry.android.router.api.Request;
 
 /**
@@ -9,10 +14,33 @@ import cherry.android.router.api.Request;
  */
 
 public interface ActivityService {
-    @URL("activity://cherry/route1")
-//    @ClassName(Route1Activity.class)
+    //    @URL("activity://cherry/route1")
+    @ClassName(SecondActivity.class)
     Request startActivity(@Query("name") String name,
                           @Query("id") int id,
                           boolean flag,
                           @Query("state") int state);
+
+    @URL("activity://cherry/route1")
+    void startActivity(@Query("name") String name,
+                       @Query("id") int id,
+                       @Query("object") Object object);
+
+    @ClassName(Route1Activity.class)
+    void route1();
+
+    @URL("activity://cherry/route2")
+    void route2();
+
+    @URL("module1://activity/main")
+    Request module1();
+
+    @URL("fragment://blank")
+    android.support.v4.app.Fragment getFragment();
+
+    @ClassName(BlankFragment.class)
+    android.support.v4.app.Fragment getFragmentByClass();
+
+    @Action(Intent.ACTION_VIEW)
+    void goUrl(@Uri String url);
 }

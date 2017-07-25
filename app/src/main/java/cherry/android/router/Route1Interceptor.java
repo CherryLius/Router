@@ -1,7 +1,7 @@
 package cherry.android.router;
 
 import cherry.android.router.annotations.Interceptor;
-import cherry.android.router.api.RouteRule;
+import cherry.android.router.api.Request;
 import cherry.android.router.api.intercept.IInterceptor;
 import cherry.android.router.api.utils.Logger;
 
@@ -11,8 +11,8 @@ import cherry.android.router.api.utils.Logger;
 @Interceptor(value = "route1", priority = 0)
 public class Route1Interceptor implements IInterceptor {
     @Override
-    public boolean intercept(RouteRule routeRule) {
-        Logger.i("Test", "intercept in 1 :" + routeRule.getDestination());
+    public boolean intercept(Request request) {
+        Logger.i("Test", "intercept in 1 :" + request.getDestination());
         return false;
     }
 }

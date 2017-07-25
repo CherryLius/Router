@@ -1,7 +1,5 @@
 package cherry.android.router.api;
 
-import android.app.Activity;
-import android.app.Fragment;
 import android.support.annotation.IntDef;
 
 import java.lang.annotation.Retention;
@@ -11,8 +9,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import cherry.android.router.api.utils.Logger;
 import cherry.android.router.api.utils.Utils;
+
+import static cherry.android.router.api.utils.Utils.getDestinationType;
 
 /**
  * Created by Administrator on 2017/5/25.
@@ -20,19 +19,17 @@ import cherry.android.router.api.utils.Utils;
 
 public class RouteRule {
 
-    private static final String TAG = "RouteRule";
-
     public static final int TYPE_ACTIVITY = 0x01;
     public static final int TYPE_FRAGMENT = 0x02;
     public static final int TYPE_MATCHER = 0x03;
 
-    private Class<?> destination;
     private String uri;
-    @Type
-    private int type = TYPE_MATCHER;
-
+    private Class<?> destination;
     private String[] interceptorNames;
     private List<InterceptorMeta> interceptorList;
+
+    @Type
+    private int type = TYPE_MATCHER;
 
     @IntDef({TYPE_ACTIVITY, TYPE_FRAGMENT, TYPE_MATCHER})
     @Retention(RetentionPolicy.SOURCE)
@@ -54,16 +51,16 @@ public class RouteRule {
         this.interceptorNames = interceptorNames;
     }
 
-    String getUri() {
-        return uri;
+    public String getUri() {
+        return this.uri;
     }
 
     public Class<?> getDestination() {
-        return destination;
+        return this.destination;
     }
 
-    void setUri(String uri) {
-        this.uri = uri;
+    List<InterceptorMeta> getInterceptors() {
+        return this.interceptorList;
     }
 
     @Type
@@ -88,21 +85,8 @@ public class RouteRule {
         Collections.sort(interceptorList);
     }
 
-    boolean interceptor() {
-        if (interceptorList == null || interceptorList.size() == 0) {
-            Logger.w(TAG, "interceptor Meta List is Empty");
-            return false;
-        }
-        for (InterceptorMeta meta : interceptorList) {
-            if (meta.getInterceptor().intercept(this)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public static RouteRule newRule(String uri, Class<?> destination, String... interceptors) {
-        return newRule(uri, destination, getTypeByClass(destination), interceptors);
+        return newRule(uri, destination, getDestinationType(destination), interceptors);
     }
 
     public static RouteRule newRule(String uri, Class<?> destination, @Type int type, String... interceptors) {
@@ -110,18 +94,6 @@ public class RouteRule {
             throw new IllegalArgumentException("Uri format invalid: " + uri);
         RouteRule routeRule = new RouteRule(uri, destination, type, interceptors);
         return routeRule;
-    }
-
-    static int getTypeByClass(Class<?> destination) {
-        if (destination == null)
-            return TYPE_MATCHER;
-        if (Activity.class.isAssignableFrom(destination)) {
-            return TYPE_ACTIVITY;
-        } else if (Fragment.class.isAssignableFrom(destination)
-                || android.support.v4.app.Fragment.class.isAssignableFrom(destination)) {
-            return TYPE_FRAGMENT;
-        }
-        return TYPE_MATCHER;
     }
 
     @Override

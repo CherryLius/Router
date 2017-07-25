@@ -10,7 +10,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -80,17 +79,7 @@ public final class Router {
                         Logger.i(TAG, "[Call] " + builder.toString());
                         if (method.getDeclaringClass() == Object.class)
                             return method.invoke(this, args);
-                        Request request = getServiceMethod(method, args).toRequest();
-                        Type returnType = method.getGenericReturnType();
-                        Logger.i(TAG, "returnType=" + returnType);
-                        if (returnType.equals(void.class)) {
-                            RouterInternal.get().request(request);
-                            return null;
-                        } else if (returnType.equals(Request.class)) {
-                            RouterInternal.get().request(request);
-                            return request;
-                        }
-                        throw new UnsupportedOperationException("Only void and Request return is Supported.");
+                        return getServiceMethod(method, args).request();
                     }
                 });
     }

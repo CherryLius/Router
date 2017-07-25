@@ -115,64 +115,82 @@ public final class RouterInternal {
         return this;
     }
 
-    private boolean intercept(Request request) {
+    private boolean intercept(ActivityRequest request) {
         if (request.isIgnoreInterceptor())
             return false;
-        RouteRule rule = request.getRule();
-        if (mGlobalInterceptor != null && mGlobalInterceptor.intercept(rule)) {
+        if (mGlobalInterceptor != null && mGlobalInterceptor.intercept(request)) {
             return true;
         }
+        RouteRule rule = request.getRule();
+        if (rule == null)
+            return false;
         rule.findInterceptors(mInterceptorMap);
-        return rule.interceptor();
+        if (rule.getInterceptors() == null || rule.getInterceptors().size() == 0) {
+            Logger.w(TAG, "interceptor List is Empty");
+            return false;
+        }
+        for (InterceptorMeta meta : rule.getInterceptors()) {
+            if (meta.getInterceptor().intercept(request)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public RouterInternal extra(String key, Object value) {
-        if (mRequest != null) {
-            mRequest.putExtra(key, value);
+        if (mRequest != null && mRequest instanceof AbstractRequest) {
+            AbstractRequest request = (AbstractRequest) mRequest;
+            request.putExtra(key, value);
         }
         return this;
     }
 
     public RouterInternal extra(Bundle value) {
-        if (mRequest != null) {
-            mRequest.putExtra(value);
+        if (mRequest != null && mRequest instanceof AbstractRequest) {
+            AbstractRequest request = (AbstractRequest) mRequest;
+            request.putExtra(value);
         }
         return this;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public RouterInternal extra(PersistableBundle value) {
-        if (mRequest != null) {
-            mRequest.putExtra(value);
+        if (mRequest != null && mRequest instanceof AbstractRequest) {
+            AbstractRequest request = (AbstractRequest) mRequest;
+            request.putExtra(value);
         }
         return this;
     }
 
     public RouterInternal transition(int enterAnim, int exitAnim) {
-        if (mRequest != null) {
-            mRequest.transition(enterAnim, exitAnim);
+        if (mRequest != null && mRequest instanceof ActivityRequest) {
+            ActivityRequest request = (ActivityRequest) mRequest;
+            request.transition(enterAnim, exitAnim);
         }
         return this;
     }
 
     @TargetApi(16)
     public RouterInternal optionsCompat(ActivityOptionsCompat optionsCompat) {
-        if (mRequest != null) {
-            mRequest.setOptionsCompat(optionsCompat);
+        if (mRequest != null && mRequest instanceof ActivityRequest) {
+            ActivityRequest request = (ActivityRequest) mRequest;
+            request.setOptionsCompat(optionsCompat);
         }
         return this;
     }
 
     public RouterInternal requestCode(int requestCode) {
-        if (mRequest != null) {
-            mRequest.setRequestCode(requestCode);
+        if (mRequest != null && mRequest instanceof ActivityRequest) {
+            ActivityRequest request = (ActivityRequest) mRequest;
+            request.setRequestCode(requestCode);
         }
         return this;
     }
 
     public RouterInternal ignoreInterceptor(boolean ignore) {
-        if (mRequest != null) {
-            mRequest.ignoreInterceptor(ignore);
+        if (mRequest != null && mRequest instanceof ActivityRequest) {
+            ActivityRequest request = (ActivityRequest) mRequest;
+            request.ignoreInterceptor(ignore);
         }
         return this;
     }
@@ -181,15 +199,23 @@ public final class RouterInternal {
         return mRouterTable.get(uri);
     }
 
+    RouteRule getRouteRule(@NonNull Class<?> className) {
+        return Utils.findRouteRuleByClass(mRouterTable, className);
+    }
+
+
+    Context getContext() {
+        return mContext;
+    }
 
     public void request(Request request) {
-        if (intercept(request)) {
+        if (request instanceof ActivityRequest && intercept((ActivityRequest) request)) {
             return;
         }
-        Intent intent = request.getIntent(mContext);
+        Intent intent = request.invoke();
+        Bundle options = request.getOptionsCompat() == null ? null : request.getOptionsCompat().toBundle();
         if (mContext instanceof Activity) {
             Activity activity = (Activity) mContext;
-            Bundle options = request.getOptionsCompat() == null ? null : request.getOptionsCompat().toBundle();
             if (request.getRequestCode() == -1) {
                 ActivityCompat.startActivity(activity, intent, options);
             } else {
@@ -199,7 +225,7 @@ public final class RouterInternal {
                 activity.overridePendingTransition(request.getEnterAnim(), request.getExitAnim());
             }
         } else {
-            ContextCompat.startActivity(mContext, intent, null);
+            ContextCompat.startActivity(mContext, intent, options);
         }
     }
 
@@ -235,9 +261,9 @@ public final class RouterInternal {
             if (callback != null)
                 callback.onSuccess(mRequest);
         }
+        Bundle options = mRequest.getOptionsCompat() == null ? null : mRequest.getOptionsCompat().toBundle();
         if (context instanceof Activity) {
             Activity activity = (Activity) context;
-            Bundle options = mRequest.getOptionsCompat() == null ? null : mRequest.getOptionsCompat().toBundle();
             if (mRequest.getRequestCode() == -1) {
                 ActivityCompat.startActivity(activity, intent, options);
             } else {
@@ -247,7 +273,7 @@ public final class RouterInternal {
                 activity.overridePendingTransition(mRequest.getEnterAnim(), mRequest.getExitAnim());
             }
         } else {
-            ContextCompat.startActivity(context, intent, null);
+            ContextCompat.startActivity(context, intent, options);
         }
     }
 
