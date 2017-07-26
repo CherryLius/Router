@@ -16,12 +16,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import cherry.android.router.api.callback.RouterCallback;
 import cherry.android.router.api.intercept.IInterceptor;
 import cherry.android.router.api.request.AbstractRequest;
 import cherry.android.router.api.request.ActionRequest;
 import cherry.android.router.api.request.ActivityRequest;
 import cherry.android.router.api.request.FragmentRequest;
 import cherry.android.router.api.request.Request;
+import cherry.android.router.api.request.UnKnownRequest;
 import cherry.android.router.api.utils.Logger;
 import cherry.android.router.api.utils.Utils;
 
@@ -140,7 +142,7 @@ public final class RouterInternal {
         Logger.w(TAG, "generate Action, Uri Cannot Find Route:" + uri);
         if (uri.startsWith("http://") || uri.startsWith("https://"))
             return new ActionRequest.Builder().setAction(Intent.ACTION_VIEW).setUri(uri).build();
-        throw new IllegalArgumentException("Route not found: " + uri);
+        return new UnKnownRequest(uri);
     }
 
     public boolean intercept(Request request) {
@@ -245,23 +247,29 @@ public final class RouterInternal {
     }
 
     public void open() {
-        open(mContext);
+        open(mContext, null);
     }
 
     public <T> void open(T t) {
+        open(t, null);
+    }
+
+    public <T> void open(T t, RouterCallback callback) {
         if (!Utils.isFragment(t.getClass()) && !Utils.isActivity(t.getClass())
                 && !t.getClass().equals(Context.class))
             throw new IllegalArgumentException("Only Support Activity Fragment and Context");
         if (mRequest == null) {
             Logger.e(TAG, "open failed");
+            if (callback != null)
+                callback.onFailed(mRequest, "No Request");
             return;
         }
-        if (intercept(mRequest)) {
-            return;
+        if (mRequest instanceof ActivityRequest) {
+            ActivityRequest activityRequest = (ActivityRequest) mRequest;
+            activityRequest.setHost(t);
         }
-        ActivityRequest activityRequest = (ActivityRequest) mRequest;
-        activityRequest.setHost(t);
-        activityRequest.request();
+        mRequest.callback(callback);
+        mRequest.request();
     }
 
     public <T> T invoke() {

@@ -2,6 +2,7 @@ package cherry.android.router.api.request;
 
 import cherry.android.router.api.RequestOptions;
 import cherry.android.router.api.RouteRule;
+import cherry.android.router.api.callback.RouterCallback;
 
 /**
  * Created by LHEE on 2017/7/22.
@@ -21,4 +22,6 @@ public interface Request<T> {
     RequestOptions getOptions();
 
     RouteRule getRule();
+
+    void callback(RouterCallback callback);
 }

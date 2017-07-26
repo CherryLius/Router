@@ -72,6 +72,8 @@ public class ActivityRequest<R> extends AbstractRequest<Intent> {
     @Override
     public void request() {
         if (RouterInternal.get().intercept(this)) {
+            if (callback != null)
+                callback.onIntercept(this);
             return;
         }
         Intent intent = invoke();
@@ -94,6 +96,8 @@ public class ActivityRequest<R> extends AbstractRequest<Intent> {
         if (enterAnim != 0 || exitAnim != 0) {
             overridePendingTransition(enterAnim, exitAnim);
         }
+        if (callback != null)
+            callback.onSuccess(this);
     }
 
     private void startActivity(Intent intent, Bundle options) {

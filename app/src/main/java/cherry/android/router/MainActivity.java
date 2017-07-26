@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import cherry.android.router.api.Router;
+import cherry.android.router.api.callback.RouterCallback;
 import cherry.android.router.api.intercept.IInterceptor;
 import cherry.android.router.api.request.Request;
 import cherry.android.router.api.utils.Logger;
@@ -81,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         Map<String, Class<?>> map = new HashMap<>();
                         map.put("/activity/route2", Route2Activity.class);
                         map.put("/activity/route1", Route1Activity.class);
+                        map.put("activity/route1", Route1Activity.class);
                         return map;
                     }
                 });
@@ -94,7 +96,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.button_1:
                 if (!TextUtils.isEmpty(mEditText.getText().toString())) {
-                    Router.build(mEditText.getText().toString()).open();
+                    Router.build(mEditText.getText().toString()).open(this, new RouterCallback() {
+                        @Override
+                        public void onSuccess(Request request) {
+                            Toast.makeText(MainActivity.this, "onSuccess:" + request.getDestination(),
+                                    Toast.LENGTH_SHORT).show();
+                        }
+
+                        @Override
+                        public void onIntercept(Request request) {
+                            Toast.makeText(MainActivity.this, "onIntercept:" + request.getDestination(),
+                                    Toast.LENGTH_SHORT).show();
+                        }
+
+                        @Override
+                        public void onFailed(Request request, String reason) {
+                            Toast.makeText(MainActivity.this, "onFailed:" + reason,
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    });
                 }
                 break;
             case R.id.button_2:
@@ -105,22 +125,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.button_3:
                 Router.build("activity/route1?name=cherry").requestCode(100)
                         .transition(R.anim.slide_in_bottom, R.anim.slide_out_bottom)
-                        .open(this/*, new RouterCallback() {
-                            @Override
-                            public void onSuccess(Request request) {
-                                Logger.i("Test", "onSuccess");
-                            }
-
-                            @Override
-                            public void onIntercept(Request request) {
-                                Logger.e("Test", "onIntercept");
-                            }
-
-                            @Override
-                            public void onFailed(Request request, String reason) {
-                                Logger.e("Test", "onFailed");
-                            }
-                        }*/);
+                        .open(this);
                 break;
             case R.id.button_4:
                 Router.build("module1://activity/main").open();

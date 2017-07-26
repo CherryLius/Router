@@ -12,6 +12,7 @@ import java.util.Map;
 
 import cherry.android.router.api.RequestOptions;
 import cherry.android.router.api.RouteRule;
+import cherry.android.router.api.callback.RouterCallback;
 import cherry.android.router.api.utils.Logger;
 import cherry.android.router.api.utils.Utils;
 
@@ -24,6 +25,7 @@ public abstract class AbstractRequest<T> implements Request<T> {
     protected String uri;
     protected RouteRule rule;
     protected RequestOptions options;
+    protected RouterCallback callback;
 
     public AbstractRequest(@NonNull RouteRule rule) {
         this.rule = rule;
@@ -79,5 +81,10 @@ public abstract class AbstractRequest<T> implements Request<T> {
     @Override
     public RequestOptions getOptions() {
         return this.options;
+    }
+
+    @Override
+    public void callback(RouterCallback callback) {
+        this.callback = callback;
     }
 }

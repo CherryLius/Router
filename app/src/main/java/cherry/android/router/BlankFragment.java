@@ -32,6 +32,6 @@ public class BlankFragment extends BaseFragment implements View.OnClickListener 
 
     @Override
     public void onClick(View v) {
-        Router.build("activity://cherry/route1").open();
+        Router.build("cherry://activity/route1").open();
     }
 }

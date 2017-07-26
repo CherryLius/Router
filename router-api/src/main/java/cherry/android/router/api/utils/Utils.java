@@ -137,7 +137,6 @@ public class Utils {
         String regex = "^(\\w+://)?([\\w\\-]+(\\.[\\w\\-]+)*\\/)*[(\\/?)\\w\\-]+(\\.[\\w\\-]+)*\\/?(:\\d*)?(\\?([\\w\\-\\.,@?^=%&:\\/~\\+#]*)+)?";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(uri);
-        Logger.e(TAG, "uri=" + uri);
         if (!matcher.matches()) {
             Logger.e(TAG, "invalid uri format: " + uri);
             return false;
