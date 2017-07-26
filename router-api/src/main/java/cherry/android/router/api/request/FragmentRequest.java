@@ -6,6 +6,7 @@ import android.support.v4.app.Fragment;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
+import cherry.android.router.api.RequestOptions;
 import cherry.android.router.api.RouteRule;
 import cherry.android.router.api.utils.Utils;
 
@@ -35,9 +36,9 @@ public class FragmentRequest<T> extends AbstractRequest<T> {
             Constructor constructor = destination.getConstructor();
             Object object = constructor.newInstance();
             if (object instanceof Fragment) {
-                ((Fragment) object).setArguments(this.arguments);
+                ((Fragment) object).setArguments(this.options.getArguments());
             } else if (object instanceof android.support.v4.app.Fragment) {
-                ((android.support.v4.app.Fragment) object).setArguments(this.arguments);
+                ((android.support.v4.app.Fragment) object).setArguments(this.options.getArguments());
             }
             return (T) object;
         } catch (NoSuchMethodException e) {
@@ -56,4 +57,5 @@ public class FragmentRequest<T> extends AbstractRequest<T> {
     public void request() {
 
     }
+
 }

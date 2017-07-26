@@ -11,6 +11,7 @@ import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 
+import cherry.android.router.api.RequestOptions;
 import cherry.android.router.api.RouteRule;
 import cherry.android.router.api.RouterInternal;
 import cherry.android.router.api.utils.Logger;
@@ -24,46 +25,17 @@ public class ActivityRequest<R> extends AbstractRequest<Intent> {
     private static final String TAG = "ActivityRequest";
 
     protected R host;
-    protected int requestCode = -1;
-    protected int enterAnim;
-    protected int exitAnim;
-    protected ActivityOptionsCompat optionsCompat;
-    private boolean ignoreInterceptor;
-    private RouteRule rule;
 
     public ActivityRequest(@NonNull RouteRule rule) {
         super(rule);
-        this.rule = rule;
     }
 
     public ActivityRequest(@NonNull String uri, @NonNull RouteRule rule) {
         super(uri, rule);
-        this.rule = rule;
     }
 
     public ActivityRequest(Class<?> destination) {
         super(destination);
-    }
-
-    public void setRequestCode(int requestCode) {
-        this.requestCode = requestCode < 0 ? -1 : requestCode;
-    }
-
-    public void transition(int enterAnim, int exitAnim) {
-        this.enterAnim = enterAnim;
-        this.exitAnim = exitAnim;
-    }
-
-    public void setOptionsCompat(ActivityOptionsCompat optionsCompat) {
-        this.optionsCompat = optionsCompat;
-    }
-
-    public void ignoreInterceptor(boolean ignore) {
-        this.ignoreInterceptor = ignore;
-    }
-
-    public boolean isIgnoreInterceptor() {
-        return this.ignoreInterceptor;
     }
 
     public void setHost(R r) {
@@ -72,10 +44,6 @@ public class ActivityRequest<R> extends AbstractRequest<Intent> {
             throw new IllegalArgumentException("Only support Context and Fragment");
         }
         this.host = r;
-    }
-
-    public RouteRule getRule() {
-        return this.rule;
     }
 
     protected Context getContext() {
@@ -94,7 +62,7 @@ public class ActivityRequest<R> extends AbstractRequest<Intent> {
     public Intent invoke() {
         final Context context = getContext();
         Intent intent = new Intent(context, this.destination);
-        intent.putExtras(this.arguments);
+        intent.putExtras(this.options.getArguments());
         if (intent != null && !(context instanceof Activity)) {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         }
@@ -103,15 +71,28 @@ public class ActivityRequest<R> extends AbstractRequest<Intent> {
 
     @Override
     public void request() {
+        if (RouterInternal.get().intercept(this)) {
+            return;
+        }
         Intent intent = invoke();
-        Bundle options = this.optionsCompat == null ? null : this.optionsCompat.toBundle();
-        if (this.requestCode == -1) {
+        Bundle options = null;
+        int requestCode = -1;
+        int enterAnim = 0, exitAnim = 0;
+        if (this.options != null) {
+            requestCode = this.options.getRequestCode();
+            enterAnim = this.options.getEnterAnim();
+            exitAnim = this.options.getExitAnim();
+            options = this.options.getOptionsCompat() != null ?
+                    this.options.getOptionsCompat().toBundle() :
+                    null;
+        }
+        if (requestCode == -1) {
             startActivity(intent, options);
         } else {
             startActivityForResult(intent, requestCode, options);
         }
-        if (this.enterAnim != 0 || this.exitAnim != 0) {
-            overridePendingTransition(this.enterAnim, this.exitAnim);
+        if (enterAnim != 0 || exitAnim != 0) {
+            overridePendingTransition(enterAnim, exitAnim);
         }
     }
 
@@ -144,12 +125,12 @@ public class ActivityRequest<R> extends AbstractRequest<Intent> {
 
     private void overridePendingTransition(int enterAnim, int exitAnim) {
         if (host instanceof Activity) {
-            ((Activity) host).overridePendingTransition(this.enterAnim, this.exitAnim);
+            ((Activity) host).overridePendingTransition(enterAnim, exitAnim);
         } else if (host instanceof Fragment) {
-            ((Fragment) host).getActivity().overridePendingTransition(this.enterAnim, this.exitAnim);
+            ((Fragment) host).getActivity().overridePendingTransition(enterAnim, exitAnim);
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN
                 && host instanceof android.app.Fragment) {
-            ((android.app.Fragment) host).getActivity().overridePendingTransition(this.enterAnim, this.exitAnim);
+            ((android.app.Fragment) host).getActivity().overridePendingTransition(enterAnim, exitAnim);
         }
     }
 

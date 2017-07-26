@@ -1,6 +1,8 @@
 package cherry.android.router.api;
 
+import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 
 import java.lang.annotation.Annotation;
@@ -9,6 +11,8 @@ import java.lang.reflect.Type;
 
 import cherry.android.router.annotations.Action;
 import cherry.android.router.annotations.ClassName;
+import cherry.android.router.annotations.Options;
+import cherry.android.router.annotations.OptionsCompat;
 import cherry.android.router.annotations.Query;
 import cherry.android.router.annotations.URL;
 import cherry.android.router.annotations.Uri;
@@ -33,7 +37,9 @@ import cherry.android.router.api.utils.Utils;
     private String mimeType;
     private Parameter<?, ?>[] parameters;
     private Object[] args;
+    private RequestOptions options;
     private RequestAdapter requestAdapter;
+    private Object host;
 
     private ServiceMethod(Builder builder) {
         this.className = builder.className;
@@ -42,11 +48,30 @@ import cherry.android.router.api.utils.Utils;
         this.mimeType = builder.mimeType;
         this.parameters = builder.parameters;
         this.args = builder.args;
-        requestAdapter = new RouteAdapter(builder.returnType);
+        this.options = builder.options;
+        this.requestAdapter = new RouteAdapter(builder.returnType);
+        this.host = getHost();
+    }
+
+    private Object getHost() {
+        if (this.args == null)
+            return null;
+        for (int i = 0; i < this.args.length; i++) {
+            Object obj = this.args[i];
+            if (obj instanceof Context
+                    || obj instanceof Fragment
+                    || obj instanceof android.app.Fragment)
+                return obj;
+        }
+        return null;
     }
 
     public Object request() {
-        return requestAdapter.adapt(toRequest());
+        Request request = toRequest();
+        if (this.host != null && request instanceof ActivityRequest) {
+            ((ActivityRequest) request).setHost(host);
+        }
+        return requestAdapter.adapt(request);
     }
 
     private Request toRequest() {
@@ -55,7 +80,6 @@ import cherry.android.router.api.utils.Utils;
         if (argsCount != params.length)
             throw new IllegalArgumentException("Arguments count (" + argsCount
                     + ") doesn't match expected count(" + params.length + ")");
-        Logger.e(TAG, "action=" + action);
         if (className != null) {
             return classRequest(params);
         } else if (action != null) {
@@ -77,10 +101,13 @@ import cherry.android.router.api.utils.Utils;
         RouteRule rule = RouterInternal.get().getRouteRule(url);
         if (rule == null)
             throw new NullPointerException("RouteRule Not Found in Route Table: " + url);
-        if (rule.getType() == RouteRule.TYPE_ACTIVITY)
-            return new ActivityRequest(url, rule);
-        else
-            return new FragmentRequest(url, rule);
+        Request request;
+        if (rule.getType() == RouteRule.TYPE_ACTIVITY) {
+            request = new ActivityRequest(url, rule);
+        } else
+            request = new FragmentRequest(url, rule);
+        request.setOptions(this.options);
+        return request;
     }
 
     private Request classRequest(Parameter<Object, Object>[] parameters) {
@@ -98,6 +125,7 @@ import cherry.android.router.api.utils.Utils;
             else
                 request = new FragmentRequest(rule);
         }
+        request.setOptions(this.options);
         for (int i = 0; i < parameters.length; i++) {
             if (parameters[i] == null)
                 continue;
@@ -110,6 +138,7 @@ import cherry.android.router.api.utils.Utils;
         ActionRequest request = new ActionRequest.Builder()
                 .setAction(action)
                 .setType(mimeType).build();
+        request.setOptions(this.options);
         for (int i = 0; i < parameters.length; i++) {
             if (parameters[i] == null)
                 continue;
@@ -129,7 +158,7 @@ import cherry.android.router.api.utils.Utils;
         private Parameter<?, ?>[] parameters;
         private Object[] args;
         private Type returnType;
-
+        private RequestOptions options;
 
         Builder(@NonNull Method method, Object[] args) {
             Logger.i(TAG, "method=" + method);
@@ -145,6 +174,7 @@ import cherry.android.router.api.utils.Utils;
             Logger.i(TAG, "returnType=" + clazz);
             Logger.i(TAG, "declaringClass=" + method.getDeclaringClass());
             this.args = args;
+            this.options = new RequestOptions();
         }
 
         public ServiceMethod build() {
@@ -163,11 +193,9 @@ import cherry.android.router.api.utils.Utils;
             parameters = new Parameter[length];
             for (int i = 0; i < length; i++) {
                 Annotation[] annotations = parameterAnnotationArray[i];
-                Logger.v(TAG, "annotations=" + annotations.length);
                 if (annotations.length > 1)
                     throw new IllegalArgumentException("Service method's one Parameter should have at most one Annotation.");
                 for (Annotation annotation : annotations) {
-                    Logger.d(TAG, "parameter: " + annotation);
                     if (annotation instanceof Query) {
                         Query query = (Query) annotation;
                         if (!TextUtils.isEmpty(baseUrl)) {
@@ -178,6 +206,8 @@ import cherry.android.router.api.utils.Utils;
                     } else if (annotation instanceof Uri) {
                         Uri uri = (Uri) annotation;
                         parameters[i] = new Parameter.UriRequest<>(uri.value());
+                    } else if (annotation instanceof OptionsCompat) {
+                        parameters[i] = new Parameter.OptionsCompat<>(null);
                     }
                 }
             }
@@ -195,6 +225,11 @@ import cherry.android.router.api.utils.Utils;
                 Action act = (Action) annotation;
                 this.action = act.value();
                 this.mimeType = act.mimeType();
+            } else if (annotation instanceof Options) {
+                Options op = (Options) annotation;
+                options.transition(op.enterAnim(), op.exitAnim())
+                        .ignoreInterceptor(op.ignoreInterceptor())
+                        .requestCode(op.requestCode());
             }
         }
 

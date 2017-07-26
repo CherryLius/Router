@@ -3,6 +3,7 @@ package cherry.android.router.api;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PersistableBundle;
@@ -111,6 +112,19 @@ public final class RouterInternal {
             throw new RuntimeException("Uri cannot be Empty");
         RouteRule rule = mRouterTable.get(uri);
         mRequest = generateRequest(rule, uri);
+        mRequest.setOptions(new RequestOptions());
+        return this;
+    }
+
+    RouterInternal build(@NonNull Uri uri) {
+        if (!mInitialized) {
+            throw new RuntimeException("Router must be initialize");
+        }
+        if (uri == null)
+            throw new RuntimeException("Uri cannot be Empty");
+        RouteRule rule = mRouterTable.get(uri.getPath());
+        mRequest = generateRequest(rule, uri.toString());
+        mRequest.setOptions(new RequestOptions());
         return this;
     }
 
@@ -124,20 +138,20 @@ public final class RouterInternal {
             Logger.w(TAG, "rule uri:" + rule.getUri());
         }
         Logger.w(TAG, "generate Action, Uri Cannot Find Route:" + uri);
-        return new ActionRequest.Builder().setAction(Intent.ACTION_VIEW).setUri(uri).build();
+        if (uri.startsWith("http://") || uri.startsWith("https://"))
+            return new ActionRequest.Builder().setAction(Intent.ACTION_VIEW).setUri(uri).build();
+        throw new IllegalArgumentException("Route not found: " + uri);
     }
 
-    private boolean intercept(Request request) {
-        if (!(request instanceof ActivityRequest)) {
-            return false;
-        }
-        final ActivityRequest activityRequest = (ActivityRequest) request;
-        if (activityRequest.isIgnoreInterceptor())
-            return false;
-        if (mGlobalInterceptor != null && mGlobalInterceptor.intercept(request)) {
+    public boolean intercept(Request request) {
+        RequestOptions options = request.getOptions();
+        boolean ignore = options != null && options.isIgnoreInterceptor();
+        if (mGlobalInterceptor != null && mGlobalInterceptor.intercept(request)
+                && !ignore) {
             return true;
         }
-        RouteRule rule = activityRequest.getRule();
+        if (ignore) return false;
+        RouteRule rule = request.getRule();
         if (rule == null)
             return false;
         rule.findInterceptors(mInterceptorMap);
@@ -154,17 +168,19 @@ public final class RouterInternal {
     }
 
     public RouterInternal extra(String key, Object value) {
-        if (mRequest != null && mRequest instanceof AbstractRequest) {
-            AbstractRequest request = (AbstractRequest) mRequest;
-            request.putExtra(key, value);
+        if (mRequest != null) {
+            RequestOptions options = mRequest.getOptions();
+            if (options != null)
+                options.extra(key, value);
         }
         return this;
     }
 
     public RouterInternal extra(Bundle value) {
-        if (mRequest != null && mRequest instanceof AbstractRequest) {
-            AbstractRequest request = (AbstractRequest) mRequest;
-            request.putExtra(value);
+        if (mRequest != null) {
+            RequestOptions options = mRequest.getOptions();
+            if (options != null)
+                options.extra(value);
         }
         return this;
     }
@@ -172,41 +188,46 @@ public final class RouterInternal {
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public RouterInternal extra(PersistableBundle value) {
         if (mRequest != null && mRequest instanceof AbstractRequest) {
-            AbstractRequest request = (AbstractRequest) mRequest;
-            request.putExtra(value);
+            RequestOptions options = mRequest.getOptions();
+            if (options != null)
+                options.extra(value);
         }
         return this;
     }
 
     public RouterInternal transition(int enterAnim, int exitAnim) {
-        if (mRequest != null && mRequest instanceof ActivityRequest) {
-            ActivityRequest request = (ActivityRequest) mRequest;
-            request.transition(enterAnim, exitAnim);
+        if (mRequest != null) {
+            RequestOptions options = mRequest.getOptions();
+            if (options != null)
+                options.transition(enterAnim, exitAnim);
         }
         return this;
     }
 
     @TargetApi(16)
     public RouterInternal optionsCompat(ActivityOptionsCompat optionsCompat) {
-        if (mRequest != null && mRequest instanceof ActivityRequest) {
-            ActivityRequest request = (ActivityRequest) mRequest;
-            request.setOptionsCompat(optionsCompat);
+        if (mRequest != null) {
+            RequestOptions options = mRequest.getOptions();
+            if (options != null)
+                options.optionsCompat(optionsCompat);
         }
         return this;
     }
 
     public RouterInternal requestCode(int requestCode) {
-        if (mRequest != null && mRequest instanceof ActivityRequest) {
-            ActivityRequest request = (ActivityRequest) mRequest;
-            request.setRequestCode(requestCode);
+        if (mRequest != null) {
+            RequestOptions options = mRequest.getOptions();
+            if (options != null)
+                options.requestCode(requestCode);
         }
         return this;
     }
 
     public RouterInternal ignoreInterceptor(boolean ignore) {
-        if (mRequest != null && mRequest instanceof ActivityRequest) {
-            ActivityRequest request = (ActivityRequest) mRequest;
-            request.ignoreInterceptor(ignore);
+        if (mRequest != null) {
+            RequestOptions options = mRequest.getOptions();
+            if (options != null)
+                options.ignoreInterceptor(ignore);
         }
         return this;
     }
@@ -219,54 +240,12 @@ public final class RouterInternal {
         return Utils.findRouteRuleByClass(mRouterTable, className);
     }
 
-
     public Context getContext() {
         return mContext;
     }
 
     public void open() {
         open(mContext);
-    }
-
-    public void open(Context context, IRouteCallback callback) {
-//        if (mRequest == null) {
-//            Logger.e(TAG, "open failed");
-//            if (callback != null)
-//                callback.onFailed(mRequest, "open failed");
-//            return;
-//        }
-//        if (intercept(mRequest)) {
-//            if (callback != null)
-//                callback.onIntercept(mRequest);
-//            return;
-//        }
-//        mRequest.request();
-//        if (context == null)
-//            context = mContext;
-//        Intent intent = getIntent(context);
-//        if (intent == null) {
-//            if (callback != null) {
-//                callback.onFailed(mRequest, "Not Get Any Intent");
-//            }
-//            return;
-//        } else {
-//            if (callback != null)
-//                callback.onSuccess(mRequest);
-//        }
-//        Bundle options = mRequest.getOptionsCompat() == null ? null : mRequest.getOptionsCompat().toBundle();
-//        if (context instanceof Activity) {
-//            Activity activity = (Activity) context;
-//            if (mRequest.getRequestCode() == -1) {
-//                ActivityCompat.startActivity(activity, intent, options);
-//            } else {
-//                ActivityCompat.startActivityForResult(activity, intent, mRequest.getRequestCode(), options);
-//            }
-//            if (mRequest.getEnterAnim() != 0 || mRequest.getExitAnim() != 0) {
-//                activity.overridePendingTransition(mRequest.getEnterAnim(), mRequest.getExitAnim());
-//            }
-//        } else {
-//            ContextCompat.startActivity(context, intent, options);
-//        }
     }
 
     public <T> void open(T t) {

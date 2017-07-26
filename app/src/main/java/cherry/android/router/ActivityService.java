@@ -1,10 +1,13 @@
 package cherry.android.router;
 
+import android.content.Context;
 import android.content.Intent;
+import android.support.v4.app.ActivityOptionsCompat;
 
 import cherry.android.router.annotations.Action;
 import cherry.android.router.annotations.ClassName;
 import cherry.android.router.annotations.Options;
+import cherry.android.router.annotations.OptionsCompat;
 import cherry.android.router.annotations.Query;
 import cherry.android.router.annotations.URL;
 import cherry.android.router.annotations.Uri;
@@ -22,22 +25,22 @@ public interface ActivityService {
                           boolean flag,
                           @Query("state") int state);
 
-    @URL("activity://cherry/route1")
+    @URL("cherry://activity/route1")
     void startActivity(@Query("name") String name,
                        @Query("id") int id,
                        @Query("object") Object object);
 
     @ClassName(Route1Activity.class)
-    void route1();
+    void route1(@OptionsCompat ActivityOptionsCompat compat);
 
-    @URL("activity://cherry/route2")
+    @URL("cherry://activity/route2")
     @Options(requestCode = 100,
-            ignoreIntercepter = true,
+            ignoreInterceptor = true,
             enterAnim = R.anim.slide_in_bottom,
             exitAnim = R.anim.slide_out_bottom)
-    void route2();
+    void route2(Context context);
 
-    @URL("module1://activity/main")
+    @URL("cherry://activity/module1/main")
     Request module1();
 
     @URL("fragment://blank")
@@ -52,4 +55,7 @@ public interface ActivityService {
     @Action(Intent.ACTION_VIEW)
     void sendSms(@Uri String uri,
                  @Query("sms_body") String body);
+
+    @URL("cherry://activity/web")
+    void startWebView(@Query("url") String url);
 }

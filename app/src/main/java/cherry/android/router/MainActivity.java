@@ -17,10 +17,9 @@ import android.widget.Toast;
 import java.util.HashMap;
 import java.util.Map;
 
-import cherry.android.router.api.IRouteCallback;
-import cherry.android.router.api.request.Request;
 import cherry.android.router.api.Router;
 import cherry.android.router.api.intercept.IInterceptor;
+import cherry.android.router.api.request.Request;
 import cherry.android.router.api.utils.Logger;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
@@ -80,7 +79,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     @Override
                     public Map<String, Class<?>> pick() {
                         Map<String, Class<?>> map = new HashMap<>();
-                        map.put("route2/activity", Route2Activity.class);
+                        map.put("/activity/route2", Route2Activity.class);
+                        map.put("/activity/route1", Route1Activity.class);
                         return map;
                     }
                 });
@@ -103,9 +103,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 activityService.startActivity("动态代理", 1222, false, 1);
                 break;
             case R.id.button_3:
-                Router.build("route2/activity").requestCode(100)
+                Router.build("activity/route1?name=cherry").requestCode(100)
                         .transition(R.anim.slide_in_bottom, R.anim.slide_out_bottom)
-                        .open(this/*, new IRouteCallback() {
+                        .open(this/*, new RouterCallback() {
                             @Override
                             public void onSuccess(Request request) {
                                 Logger.i("Test", "onSuccess");
@@ -124,16 +124,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.button_4:
                 Router.build("module1://activity/main").open();
-//                ActivityService service = Router.create(ActivityService.class);
-//                service.startActivity("123456", 10, true, 333);
                 break;
             case R.id.button_5:
-//                Intent intent = new Intent(Intent.ACTION_VIEW);
-//                intent.setData(Uri.parse("http://m.baidu.com"));
-//                startActivity(intent);
                 Router.build("http://m.baidu.com").open();
                 break;
             case R.id.button_6:
+                ActivityService service = Router.create(ActivityService.class);
+                service.startWebView("file:///android_asset/scheme-test.html");
+                break;
+            case R.id.button_100:
                 Router.destroy();
                 break;
         }

@@ -8,7 +8,7 @@ import cherry.android.router.annotations.Route;
 import cherry.android.router.annotations.Extra;
 import cherry.android.router.api.Router;
 
-@Route(value = "activity://cherry/route1", interceptor = "route1")
+@Route(value = "cherry://activity/route1", interceptor = "route1")
 public class Route1Activity extends AppCompatActivity {
 
     @Extra(name = "id", nonNull = true)

@@ -2,6 +2,7 @@ package cherry.android.router.api;
 
 import android.app.Activity;
 import android.content.Context;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 
@@ -57,6 +58,10 @@ public final class Router {
         return RouterInternal.get().build(uri);
     }
 
+    public static RouterInternal build(@NonNull Uri uri) {
+        return RouterInternal.get().build(uri);
+    }
+
     public static <T> T create(final Class<T> service) {
         Utils.validateServiceInterface(service);
         return (T) Proxy.newProxyInstance(service.getClassLoader(), new Class[]{service},
@@ -79,7 +84,6 @@ public final class Router {
                                 .append("::")
                                 .append(method.getGenericReturnType());
                         Logger.i(TAG, "[Call] " + builder.toString());
-                        Logger.e(TAG, "args=" + args);
                         if (method.getDeclaringClass() == Object.class)
                             return method.invoke(this, args);
                         return getServiceMethod(method, args).request();

@@ -7,6 +7,7 @@
     tools:context="cherry.android.router.Route2Activity">
 
     <android.support.v7.widget.AppCompatTextView
+        android:id="@id/textView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Route2" />

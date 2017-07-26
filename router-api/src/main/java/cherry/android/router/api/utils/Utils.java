@@ -5,11 +5,13 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,7 +21,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -123,14 +127,17 @@ public class Utils {
         return instantRunSourcePaths;
     }
 
+    //(\w+)://([^/:]+)(:\d*)?([^# ]*)/
     //^(\w+://)?([\w\-]+(\.[\w\-]+)*\/)*[\w\-]+(\.[\w\-]+)*\/?(:\d*)?(\?([\w\-\.,@?^=%&:\/~\+#]*)+)?
     public static boolean checkRouteValid(String uri) {
         if (uri == null || uri.trim().isEmpty())
             return false;
         uri = uri.trim();
-        String regex = "^(\\w+://)?([\\w\\-]+(\\.[\\w\\-]+)*\\/)*[\\w\\-]+(\\.[\\w\\-]+)*\\/?(:\\d*)?(\\?([\\w\\-\\.,@?^=%&:\\/~\\+#]*)+)?";
+//        String regex = "^(\\w+://)?([\\w\\-]+(\\.[\\w\\-]+)*\\/)*(\\/?)[\\w\\-]+\\/?(\\.[\\w\\-]+)*\\/?(:\\d*)?(\\?([\\w\\-\\.,@?^=%&:\\/~\\+#]*)+)?";
+        String regex = "^(\\w+://)?([\\w\\-]+(\\.[\\w\\-]+)*\\/)*[(\\/?)\\w\\-]+(\\.[\\w\\-]+)*\\/?(:\\d*)?(\\?([\\w\\-\\.,@?^=%&:\\/~\\+#]*)+)?";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(uri);
+        Logger.e(TAG, "uri=" + uri);
         if (!matcher.matches()) {
             Logger.e(TAG, "invalid uri format: " + uri);
             return false;
@@ -300,5 +307,37 @@ public class Utils {
             return TYPE_FRAGMENT;
         }
         return TYPE_MATCHER;
+    }
+
+    public static Map<String, String> splitQueryParameters(Uri rawUri) {
+        String query = rawUri.getEncodedQuery();
+
+        if (query == null) {
+            return Collections.emptyMap();
+        }
+
+        Map<String, String> paramMap = new LinkedHashMap<>();
+        int start = 0;
+        do {
+            int next = query.indexOf('&', start);
+            int end = (next == -1) ? query.length() : next;
+
+            int separator = query.indexOf('=', start);
+            if (separator > end || separator == -1) {
+                separator = end;
+            }
+
+            String name = query.substring(start, separator);
+
+            if (!TextUtils.isEmpty(name)) {
+                String value = (separator == end ? "" : query.substring(separator + 1, end));
+                paramMap.put(Uri.decode(name), Uri.decode(value));
+            }
+
+            // Move start to end of name.
+            start = end + 1;
+        } while (start < query.length());
+
+        return Collections.unmodifiableMap(paramMap);
     }
 }

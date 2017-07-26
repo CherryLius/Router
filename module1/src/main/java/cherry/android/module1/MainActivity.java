@@ -5,7 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 
 import cherry.android.router.annotations.Route;
 
-@Route(value = "module1://activity/main", interceptor = "route1")
+@Route(value = "cherry://activity/module1/main", interceptor = "route1")
 public class MainActivity extends AppCompatActivity {
 
     @Override

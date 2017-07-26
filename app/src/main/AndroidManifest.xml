@@ -3,6 +3,7 @@
     package="cherry.android.router">
 
     <uses-permission android:name="android.permission.SEND_SMS" />
+
     <application
         android:name=".RouterApplication"
         android:allowBackup="true"
@@ -25,7 +26,33 @@
         <activity
             android:name=".SecondActivity"
             android:label="@string/title_activity_second"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name=".SchemeFilterActivity">
+
+            <!-- scheme -->
+            <intent-filter>
+                <data
+                    android:host="m.android.router.com"
+                    android:scheme="cherry" />
+
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+            </intent-filter>
+            <!--httpLink-->
+            <intent-filter>
+                <data
+                    android:host="m.android.router.com"
+                    android:scheme="http" />
+
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".WebActivity"></activity>
     </application>
 
 </manifest>
