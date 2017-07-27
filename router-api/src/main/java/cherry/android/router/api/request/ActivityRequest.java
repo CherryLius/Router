@@ -20,11 +20,10 @@ import cherry.android.router.api.utils.Logger;
  * Created by ROOT on 2017/7/25.
  */
 
-public class ActivityRequest<R> extends AbstractRequest<Intent> {
+public class ActivityRequest<R> extends AbstractRequest<Intent, R> {
 
     private static final String TAG = "ActivityRequest";
 
-    protected R host;
 
     public ActivityRequest(@NonNull RouteRule rule) {
         super(rule);
@@ -38,25 +37,6 @@ public class ActivityRequest<R> extends AbstractRequest<Intent> {
         super(destination);
     }
 
-    public void setHost(R r) {
-        if (!(r instanceof Context) && !(r instanceof Fragment)
-                && !(r instanceof android.app.Fragment)) {
-            throw new IllegalArgumentException("Only support Context and Fragment");
-        }
-        this.host = r;
-    }
-
-    protected Context getContext() {
-        if (host == null)
-            return RouterInternal.get().getContext();
-        if (host instanceof Context)
-            return (Context) host;
-        if (host instanceof Fragment)
-            return ((Fragment) host).getActivity();
-        if (host instanceof android.app.Fragment)
-            return ((android.app.Fragment) host).getActivity();
-        return RouterInternal.get().getContext();
-    }
 
     @Override
     public Intent invoke() {

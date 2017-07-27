@@ -23,6 +23,7 @@ import cherry.android.router.api.request.ActionRequest;
 import cherry.android.router.api.request.ActivityRequest;
 import cherry.android.router.api.request.FragmentRequest;
 import cherry.android.router.api.request.Request;
+import cherry.android.router.api.request.UnKnownRequest;
 import cherry.android.router.api.utils.Logger;
 import cherry.android.router.api.utils.Utils;
 
@@ -68,9 +69,7 @@ import cherry.android.router.api.utils.Utils;
 
     public Object request() {
         Request request = toRequest();
-        if (this.host != null && request instanceof ActivityRequest) {
-            ((ActivityRequest) request).setHost(host);
-        }
+        if (this.host != null) request.setHost(host);
         return requestAdapter.adapt(request);
     }
 
@@ -100,7 +99,7 @@ import cherry.android.router.api.utils.Utils;
         Logger.i(TAG, url);
         RouteRule rule = RouterInternal.get().getRouteRule(url);
         if (rule == null)
-            throw new NullPointerException("RouteRule Not Found in Route Table: " + url);
+            return new UnKnownRequest(url);
         Request request;
         if (rule.getType() == RouteRule.TYPE_ACTIVITY) {
             request = new ActivityRequest(url, rule);

@@ -1,17 +1,20 @@
 package cherry.android.router.api.request;
 
+import android.content.Context;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
+import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 
 import java.util.Map;
 
 import cherry.android.router.api.RequestOptions;
 import cherry.android.router.api.RouteRule;
+import cherry.android.router.api.RouterInternal;
 import cherry.android.router.api.callback.RouterCallback;
 import cherry.android.router.api.utils.Logger;
 import cherry.android.router.api.utils.Utils;
@@ -20,12 +23,13 @@ import cherry.android.router.api.utils.Utils;
  * Created by ROOT on 2017/7/25.
  */
 
-public abstract class AbstractRequest<T> implements Request<T> {
+public abstract class AbstractRequest<T, R> implements Request<T, R> {
     protected Class<?> destination;
     protected String uri;
     protected RouteRule rule;
     protected RequestOptions options;
     protected RouterCallback callback;
+    protected R host;
 
     public AbstractRequest(@NonNull RouteRule rule) {
         this.rule = rule;
@@ -86,5 +90,26 @@ public abstract class AbstractRequest<T> implements Request<T> {
     @Override
     public void callback(RouterCallback callback) {
         this.callback = callback;
+    }
+
+    @Override
+    public void setHost(R r) {
+        if (!(r instanceof Context) && !(r instanceof Fragment)
+                && !(r instanceof android.app.Fragment)) {
+            throw new IllegalArgumentException("Only support Context and Fragment");
+        }
+        this.host = r;
+    }
+
+    protected Context getContext() {
+        if (host == null)
+            return RouterInternal.get().getContext();
+        if (host instanceof Context)
+            return (Context) host;
+        if (host instanceof Fragment)
+            return ((Fragment) host).getActivity();
+        if (host instanceof android.app.Fragment)
+            return ((android.app.Fragment) host).getActivity();
+        return RouterInternal.get().getContext();
     }
 }

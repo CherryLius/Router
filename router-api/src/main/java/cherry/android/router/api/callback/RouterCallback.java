@@ -12,22 +12,4 @@ public interface RouterCallback {
     void onIntercept(Request request);
 
     void onFailed(Request request, String reason);
-
-    class SimpleCallback implements RouterCallback {
-
-        @Override
-        public void onSuccess(Request request) {
-
-        }
-
-        @Override
-        public void onIntercept(Request request) {
-
-        }
-
-        @Override
-        public void onFailed(Request request, String reason) {
-
-        }
-    }
 }

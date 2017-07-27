@@ -8,7 +8,7 @@ import cherry.android.router.api.callback.RouterCallback;
  * Created by LHEE on 2017/7/22.
  */
 
-public interface Request<T> {
+public interface Request<T, R> {
     String getUri();
 
     Class<?> getDestination();
@@ -24,4 +24,6 @@ public interface Request<T> {
     RouteRule getRule();
 
     void callback(RouterCallback callback);
+
+    void setHost(R host);
 }

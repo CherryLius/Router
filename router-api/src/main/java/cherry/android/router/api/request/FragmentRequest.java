@@ -14,7 +14,7 @@ import cherry.android.router.api.utils.Utils;
  * Created by ROOT on 2017/7/25.
  */
 
-public class FragmentRequest<T> extends AbstractRequest<T> {
+public class FragmentRequest<T, R> extends AbstractRequest<T, R> {
 
     public FragmentRequest(@NonNull RouteRule rule) {
         super(rule);

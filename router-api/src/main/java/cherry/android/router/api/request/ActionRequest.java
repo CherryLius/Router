@@ -31,9 +31,12 @@ public class ActionRequest extends ActivityRequest {
     public Intent invoke() {
         final Context context = getContext();
         Intent intent = new Intent(this.action);
-        if (!TextUtils.isEmpty(this.type))
+        if (!TextUtils.isEmpty(this.type)
+                && TextUtils.isEmpty(this.uri)) {
+            intent.setDataAndType(Uri.parse(this.uri), this.type);
+        } else if (!TextUtils.isEmpty(this.type))
             intent.setType(this.type);
-        if (!TextUtils.isEmpty(this.uri))
+        else if (!TextUtils.isEmpty(this.uri))
             intent.setData(Uri.parse(this.uri));
         intent.putExtras(this.options.getArguments());
         if (intent != null && !(context instanceof Activity)) {

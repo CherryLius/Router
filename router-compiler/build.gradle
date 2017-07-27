@@ -23,8 +23,14 @@ apply plugin: 'maven'
 apply plugin: 'com.jfrog.bintray'
 
 group = 'cherry.android'
-version = '1.0.0'
-
+version = '1.1.0'
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: uri('F:/Android/repos'))
+        }
+    }
+}
 def siteUrl = 'https://github.com/CherryLius/Router'
 def gitUrl = 'https://github.com/CherryLius/Router.git'
 install {

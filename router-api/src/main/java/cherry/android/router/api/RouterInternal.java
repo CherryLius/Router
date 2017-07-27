@@ -111,7 +111,7 @@ public final class RouterInternal {
             throw new RuntimeException("Router must be initialize");
         }
         if (TextUtils.isEmpty(uri))
-            throw new RuntimeException("Uri cannot be Empty");
+            throw new NullPointerException("Uri cannot be Empty");
         RouteRule rule = mRouterTable.get(uri);
         mRequest = generateRequest(rule, uri);
         mRequest.setOptions(new RequestOptions());
@@ -123,7 +123,7 @@ public final class RouterInternal {
             throw new RuntimeException("Router must be initialize");
         }
         if (uri == null)
-            throw new RuntimeException("Uri cannot be Empty");
+            throw new NullPointerException("Uri cannot be Empty");
         RouteRule rule = mRouterTable.get(uri.getPath());
         mRequest = generateRequest(rule, uri.toString());
         mRequest.setOptions(new RequestOptions());
@@ -264,10 +264,7 @@ public final class RouterInternal {
                 callback.onFailed(mRequest, "No Request");
             return;
         }
-        if (mRequest instanceof ActivityRequest) {
-            ActivityRequest activityRequest = (ActivityRequest) mRequest;
-            activityRequest.setHost(t);
-        }
+        mRequest.setHost(t);
         mRequest.callback(callback);
         mRequest.request();
     }
