@@ -86,16 +86,16 @@ public final class Router {
                         Logger.i(TAG, "[Call] " + builder.toString());
                         if (method.getDeclaringClass() == Object.class)
                             return method.invoke(this, args);
-                        return getServiceMethod(method, args).request();
+                        return getServiceMethod(method).request(args);
                     }
                 });
     }
 
-    private static ServiceMethod getServiceMethod(Method method, Object[] args) {
+    private static ServiceMethod getServiceMethod(Method method) {
         ServiceMethod serviceMethod = SERVICE_METHOD.get(method);
         if (serviceMethod != null)
             return serviceMethod;
-        serviceMethod = new ServiceMethod.Builder(method, args).build();
+        serviceMethod = new ServiceMethod.Builder(method).build();
         SERVICE_METHOD.put(method, serviceMethod);
         return serviceMethod;
     }

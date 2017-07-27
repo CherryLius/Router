@@ -123,7 +123,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 activityService.startActivity("动态代理", 1222, false, 1);
                 break;
             case R.id.button_3:
-                Router.build("activity/route1?name=cherry").requestCode(100)
+                Router.build("/activity/route1?name=建国大业&id=1000").requestCode(100)
                         .transition(R.anim.slide_in_bottom, R.anim.slide_out_bottom)
                         .open(this);
                 break;

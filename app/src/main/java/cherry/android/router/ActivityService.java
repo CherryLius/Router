@@ -25,10 +25,15 @@ public interface ActivityService {
                           boolean flag,
                           @Query("state") int state);
 
-    @URL("cherry://activity/route1")
+    @URL("/activity/route1")
     void startActivity(@Query("name") String name,
                        @Query("id") int id,
                        @Query("object") Object object);
+
+//    @URL("/activity/movie/detail")
+//    void startActivity(@Query("name") String name,
+//                       @Query("id") String id,
+//                       @Query("imageUrl") String url);
 
     @ClassName(Route1Activity.class)
     void route1(@OptionsCompat ActivityOptionsCompat compat);

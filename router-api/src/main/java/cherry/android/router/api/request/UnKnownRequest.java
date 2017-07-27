@@ -11,7 +11,7 @@ import cherry.android.router.api.exception.UnKnownUriException;
 public class UnKnownRequest extends AbstractRequest<Object, Object> {
 
     public UnKnownRequest(@NonNull String uri) {
-        super(uri, null);
+        super(uri);
     }
 
     @Override

@@ -44,7 +44,8 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.button1:
-                service.startActivity("jack", 20, "MainApp");
+                service.startActivity("jack", 20, "建国大业");
+//                service.startActivity("建军大业", "26692823", "http://img3.doubanio.com/view/movie_poster_cover/lpst/public/p2493892158.jpg");
                 break;
             case R.id.button2:
                 service.route1(ActivityOptionsCompat.makeBasic());

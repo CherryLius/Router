@@ -37,10 +37,8 @@ import cherry.android.router.api.utils.Utils;
     private String action;
     private String mimeType;
     private Parameter<?, ?>[] parameters;
-    private Object[] args;
     private RequestOptions options;
     private RequestAdapter requestAdapter;
-    private Object host;
 
     private ServiceMethod(Builder builder) {
         this.className = builder.className;
@@ -48,17 +46,15 @@ import cherry.android.router.api.utils.Utils;
         this.action = builder.action;
         this.mimeType = builder.mimeType;
         this.parameters = builder.parameters;
-        this.args = builder.args;
         this.options = builder.options;
         this.requestAdapter = new RouteAdapter(builder.returnType);
-        this.host = getHost();
     }
 
-    private Object getHost() {
-        if (this.args == null)
+    private Object getHost(Object[] args) {
+        if (args == null)
             return null;
-        for (int i = 0; i < this.args.length; i++) {
-            Object obj = this.args[i];
+        for (int i = 0; i < args.length; i++) {
+            Object obj = args[i];
             if (obj instanceof Context
                     || obj instanceof Fragment
                     || obj instanceof android.app.Fragment)
@@ -67,27 +63,31 @@ import cherry.android.router.api.utils.Utils;
         return null;
     }
 
-    public Object request() {
-        Request request = toRequest();
-        if (this.host != null) request.setHost(host);
+    public Object request(Object[] args) {
+        Request request = toRequest(args);
+        Object host = getHost(args);
+        if (host != null)
+            request.setHost(host);
         return requestAdapter.adapt(request);
     }
 
-    private Request toRequest() {
+    private Request toRequest(Object[] args) {
         Parameter<Object, Object>[] params = (Parameter<Object, Object>[]) parameters;
         final int argsCount = args != null ? args.length : 0;
         if (argsCount != params.length)
             throw new IllegalArgumentException("Arguments count (" + argsCount
                     + ") doesn't match expected count(" + params.length + ")");
         if (className != null) {
-            return classRequest(params);
+            Logger.d(TAG, "classRequest");
+            return classRequest(params, args);
         } else if (action != null) {
-            return actionRequest(params);
+            Logger.d(TAG, "actionRequest");
+            return actionRequest(params, args);
         }
-        return urlRequest(params);
+        return urlRequest(params, args);
     }
 
-    private Request urlRequest(Parameter<Object, Object>[] parameters) {
+    private Request urlRequest(Parameter<Object, Object>[] parameters, Object[] args) {
         RouteUrl.Builder builder = RouteUrl.Builder.parse(this.baseUrl);
         for (int i = 0; i < parameters.length; i++) {
             if (parameters[i] == null)
@@ -96,7 +96,7 @@ import cherry.android.router.api.utils.Utils;
         }
         RouteUrl routeUrl = builder.build();
         String url = routeUrl.toUrl();
-        Logger.i(TAG, url);
+        Logger.i(TAG, "urlRequest=" + url);
         RouteRule rule = RouterInternal.get().getRouteRule(url);
         if (rule == null)
             return new UnKnownRequest(url);
@@ -109,7 +109,7 @@ import cherry.android.router.api.utils.Utils;
         return request;
     }
 
-    private Request classRequest(Parameter<Object, Object>[] parameters) {
+    private Request classRequest(Parameter<Object, Object>[] parameters, Object[] args) {
         AbstractRequest request;
         RouteRule rule = RouterInternal.get().getRouteRule(className);
         if (rule == null) {
@@ -133,7 +133,7 @@ import cherry.android.router.api.utils.Utils;
         return request;
     }
 
-    private Request actionRequest(Parameter<Object, Object>[] parameters) {
+    private Request actionRequest(Parameter<Object, Object>[] parameters, Object[] args) {
         ActionRequest request = new ActionRequest.Builder()
                 .setAction(action)
                 .setType(mimeType).build();
@@ -155,11 +155,10 @@ import cherry.android.router.api.utils.Utils;
         final Annotation[] methodAnnotations;
         final Annotation[][] parameterAnnotationArray;
         private Parameter<?, ?>[] parameters;
-        private Object[] args;
         private Type returnType;
         private RequestOptions options;
 
-        Builder(@NonNull Method method, Object[] args) {
+        Builder(@NonNull Method method) {
             Logger.i(TAG, "method=" + method);
             this.methodAnnotations = method.getAnnotations();
             this.parameterAnnotationArray = method.getParameterAnnotations();
@@ -172,7 +171,6 @@ import cherry.android.router.api.utils.Utils;
             Class clazz = method.getReturnType();
             Logger.i(TAG, "returnType=" + clazz);
             Logger.i(TAG, "declaringClass=" + method.getDeclaringClass());
-            this.args = args;
             this.options = new RequestOptions();
         }
 

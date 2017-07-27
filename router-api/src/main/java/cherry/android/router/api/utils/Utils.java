@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import cherry.android.router.annotations.Query;
 import cherry.android.router.api.Picker;
 import cherry.android.router.api.RouteRule;
 import cherry.android.router.api.Router;
@@ -310,6 +311,37 @@ public class Utils {
 
     public static Map<String, String> splitQueryParameters(Uri rawUri) {
         String query = rawUri.getEncodedQuery();
+
+        if (query == null) {
+            return Collections.emptyMap();
+        }
+
+        Map<String, String> paramMap = new LinkedHashMap<>();
+        int start = 0;
+        do {
+            int next = query.indexOf('&', start);
+            int end = (next == -1) ? query.length() : next;
+
+            int separator = query.indexOf('=', start);
+            if (separator > end || separator == -1) {
+                separator = end;
+            }
+
+            String name = query.substring(start, separator);
+
+            if (!TextUtils.isEmpty(name)) {
+                String value = (separator == end ? "" : query.substring(separator + 1, end));
+                paramMap.put(Uri.decode(name), Uri.decode(value));
+            }
+
+            // Move start to end of name.
+            start = end + 1;
+        } while (start < query.length());
+
+        return Collections.unmodifiableMap(paramMap);
+    }
+
+    public static Map<String, String> splitQueryParameters(@NonNull String query) {
 
         if (query == null) {
             return Collections.emptyMap();

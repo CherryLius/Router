@@ -24,12 +24,17 @@ import cherry.android.router.api.utils.Utils;
  */
 
 public abstract class AbstractRequest<T, R> implements Request<T, R> {
+    private static final String TAG = "Request";
     protected Class<?> destination;
     protected String uri;
     protected RouteRule rule;
     protected RequestOptions options;
     protected RouterCallback callback;
     protected R host;
+
+    public AbstractRequest(@NonNull String uri) {
+        this.uri = uri;
+    }
 
     public AbstractRequest(@NonNull RouteRule rule) {
         this.rule = rule;
@@ -51,8 +56,18 @@ public abstract class AbstractRequest<T, R> implements Request<T, R> {
         if (TextUtils.isEmpty(uri))
             return;
         Uri routeUri = Uri.parse(uri);
-        Logger.e("Test", "uri=" + routeUri.getQuery());
-        Map<String, String> queryMap = Utils.splitQueryParameters(routeUri);
+        Map<String, String> queryMap;
+        if (routeUri.getQuery() == null) {
+            int index = uri.indexOf('?');
+            if (index == -1)
+                return;
+            String query = uri.substring(index + 1, uri.length());
+            Logger.e(TAG, "sub query=" + query);
+            queryMap = Utils.splitQueryParameters(query);
+        } else {
+            Logger.e(TAG, "uri.query=" + routeUri.getQuery());
+            queryMap = Utils.splitQueryParameters(routeUri);
+        }
         for (Map.Entry<String, String> entry : queryMap.entrySet()) {
             this.options.getArguments().putString(entry.getKey(), entry.getValue());
         }
