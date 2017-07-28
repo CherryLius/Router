@@ -26,8 +26,7 @@ public class RouteGenerator extends PickerGenerator<RouteClass> {
 
     @Override
     TypeName getGenericType() {
-        ParameterizedTypeName param = ParameterizedTypeName.get(ClassName.get(Map.class),
+        return ParameterizedTypeName.get(ClassName.get(Map.class),
                 ClassName.get(String.class), ROUTE_RULE);
-        return param;
     }
 }

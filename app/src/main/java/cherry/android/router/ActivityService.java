@@ -2,6 +2,7 @@ package cherry.android.router;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityOptionsCompat;
 
 import cherry.android.router.annotations.Action;
@@ -11,6 +12,7 @@ import cherry.android.router.annotations.OptionsCompat;
 import cherry.android.router.annotations.Query;
 import cherry.android.router.annotations.URL;
 import cherry.android.router.annotations.Uri;
+import cherry.android.router.api.callback.RouterCallback;
 import cherry.android.router.api.request.Request;
 
 /**
@@ -30,10 +32,11 @@ public interface ActivityService {
                        @Query("id") int id,
                        @Query("object") Object object);
 
-//    @URL("/activity/movie/detail")
-//    void startActivity(@Query("name") String name,
-//                       @Query("id") String id,
-//                       @Query("imageUrl") String url);
+    @URL("/activity/movie/detail")
+    void startActivity(@Query("name") String name,
+                       @Query("id") String id,
+                       @Query("imageUrl") String url,
+                       @NonNull RouterCallback callback);
 
     @ClassName(Route1Activity.class)
     void route1(@OptionsCompat ActivityOptionsCompat compat);

@@ -39,7 +39,7 @@ public class ActionRequest extends ActivityRequest {
         else if (!TextUtils.isEmpty(this.uri))
             intent.setData(Uri.parse(this.uri));
         intent.putExtras(this.options.getArguments());
-        if (intent != null && !(context instanceof Activity)) {
+        if (!(context instanceof Activity)) {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         }
         return intent;

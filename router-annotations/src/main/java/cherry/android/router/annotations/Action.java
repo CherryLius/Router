@@ -18,7 +18,7 @@ public @interface Action {
     /**
      * Set an explicit MIME data type
      *
-     * @return
+     * @return mimeType
      */
     String mimeType() default "";
 }

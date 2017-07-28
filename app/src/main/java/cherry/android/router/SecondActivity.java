@@ -10,6 +10,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Toast;
 
+import cherry.android.router.api.callback.RouterCallback;
+import cherry.android.router.api.callback.SimpleCallback;
 import cherry.android.router.api.request.Request;
 import cherry.android.router.api.Router;
 import cherry.android.router.api.utils.Logger;
@@ -44,8 +46,16 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.button1:
-                service.startActivity("jack", 20, "建国大业");
-//                service.startActivity("建军大业", "26692823", "http://img3.doubanio.com/view/movie_poster_cover/lpst/public/p2493892158.jpg");
+//                service.startActivity("jack", 20, "建国大业");
+                service.startActivity("建军大业", "26692823",
+                        "http://img3.doubanio.com/view/movie_poster_cover/lpst/public/p2493892158.jpg",
+                        new SimpleCallback() {
+                            @Override
+                            public void onFailed(Request request, String reason) {
+                                super.onFailed(request, reason);
+                                Toast.makeText(SecondActivity.this, "fail",Toast.LENGTH_SHORT).show();
+                            }
+                        });
                 break;
             case R.id.button2:
                 service.route1(ActivityOptionsCompat.makeBasic());

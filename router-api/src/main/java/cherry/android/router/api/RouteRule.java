@@ -92,8 +92,7 @@ public class RouteRule {
     public static RouteRule newRule(String uri, Class<?> destination, @Type int type, String... interceptors) {
         if (!Utils.checkRouteValid(uri))
             throw new IllegalArgumentException("Uri format invalid: " + uri);
-        RouteRule routeRule = new RouteRule(uri, destination, type, interceptors);
-        return routeRule;
+        return new RouteRule(uri, destination, type, interceptors);
     }
 
     @Override

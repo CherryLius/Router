@@ -3,10 +3,8 @@ package cherry.android.router.api;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.text.TextUtils;
 
-import cherry.android.router.api.request.AbstractRequest;
 import cherry.android.router.api.request.ActionRequest;
 import cherry.android.router.api.request.Request;
-import cherry.android.router.api.utils.Logger;
 
 /**
  * Created by LHEE on 2017/7/23.

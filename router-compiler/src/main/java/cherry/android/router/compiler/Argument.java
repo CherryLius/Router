@@ -12,15 +12,15 @@ import cherry.android.router.annotations.Extra;
  * Created by Administrator on 2017/6/8.
  */
 
-public class RoutingFiled {
+public class Argument {
     private VariableElement mFieldElement;
     private String mKeyName;
     private boolean mNonNull;
 
-    public RoutingFiled(Element element) {
+    public Argument(Element element) {
         if (!element.getKind().isField())
             throw new IllegalStateException(String.format("Only field can be annotated with @%s",
-                    RoutingFiled.class.getSimpleName()));
+                    Argument.class.getSimpleName()));
         mFieldElement = (VariableElement) element;
         Extra annotation = mFieldElement.getAnnotation(Extra.class);
         mKeyName = annotation.name();

@@ -7,11 +7,9 @@ import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 
-import cherry.android.router.api.RequestOptions;
 import cherry.android.router.api.RouteRule;
 import cherry.android.router.api.RouterInternal;
 import cherry.android.router.api.utils.Logger;
@@ -43,7 +41,7 @@ public class ActivityRequest<R> extends AbstractRequest<Intent, R> {
         final Context context = getContext();
         Intent intent = new Intent(context, this.destination);
         intent.putExtras(this.options.getArguments());
-        if (intent != null && !(context instanceof Activity)) {
+        if (!(context instanceof Activity)) {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         }
         return intent;

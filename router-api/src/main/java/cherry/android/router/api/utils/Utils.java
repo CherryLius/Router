@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import cherry.android.router.annotations.Query;
 import cherry.android.router.api.Picker;
 import cherry.android.router.api.RouteRule;
 import cherry.android.router.api.Router;
@@ -278,23 +277,16 @@ public class Utils {
     }
 
     public static boolean checkValidDestination(Class<?> destination) {
-        if (isActivity(destination) || isFragment(destination)) {
-            return true;
-        }
-        return false;
+        return isActivity(destination) || isFragment(destination);
     }
 
     public static boolean isActivity(Class<?> destination) {
-        if (destination == null)
-            return false;
-        return Activity.class.isAssignableFrom(destination);
+        return destination != null && Activity.class.isAssignableFrom(destination);
     }
 
     public static boolean isFragment(Class<?> destination) {
-        if (destination == null)
-            return false;
-        return Fragment.class.isAssignableFrom(destination)
-                || android.support.v4.app.Fragment.class.isAssignableFrom(destination);
+        return destination != null && (Fragment.class.isAssignableFrom(destination)
+                || android.support.v4.app.Fragment.class.isAssignableFrom(destination));
     }
 
     @RouteRule.Type

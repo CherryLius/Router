@@ -33,11 +33,12 @@ public class RouteAdapter implements RequestAdapter {
         } else if (request instanceof ActionRequest) {
             request.request();
             return request.invoke();
-        } else if (request instanceof ActivityRequest) {
+        }/* else if (request instanceof ActivityRequest) {
             request.request();
             return request;
-        }
-        throw new UnsupportedOperationException("UnSupport");
+        }*/
+        request.request();
+        return request;
     }
 
 }

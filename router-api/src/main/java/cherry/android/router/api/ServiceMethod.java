@@ -5,6 +5,8 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.text.TextUtils;
 
+import com.android.internal.util.Predicate;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -18,6 +20,7 @@ import cherry.android.router.annotations.URL;
 import cherry.android.router.annotations.Uri;
 import cherry.android.router.api.adapter.RequestAdapter;
 import cherry.android.router.api.adapter.RouteAdapter;
+import cherry.android.router.api.callback.RouterCallback;
 import cherry.android.router.api.request.AbstractRequest;
 import cherry.android.router.api.request.ActionRequest;
 import cherry.android.router.api.request.ActivityRequest;
@@ -51,14 +54,39 @@ import cherry.android.router.api.utils.Utils;
     }
 
     private Object getHost(Object[] args) {
+        return filterArgs(args, new Predicate<Object>() {
+            @Override
+            public boolean apply(Object obj) {
+                return obj instanceof Context
+                        || obj instanceof Fragment
+                        || obj instanceof android.app.Fragment;
+            }
+        });
+//        lambda
+//        return filterArgs(args, (obj)->{
+//           return obj instanceof Context
+//                    || obj instanceof Fragment
+//                    || obj instanceof android.app.Fragment;
+//        });
+    }
+
+    private Object getCallback(Object[] args) {
+        return filterArgs(args, new Predicate<Object>() {
+            @Override
+            public boolean apply(Object o) {
+                return o instanceof RouterCallback;
+            }
+        });
+    }
+
+    private static Object filterArgs(Object[] args, Predicate<Object> predicate) {
         if (args == null)
             return null;
         for (int i = 0; i < args.length; i++) {
             Object obj = args[i];
-            if (obj instanceof Context
-                    || obj instanceof Fragment
-                    || obj instanceof android.app.Fragment)
+            if (predicate != null && predicate.apply(obj)) {
                 return obj;
+            }
         }
         return null;
     }
@@ -68,6 +96,9 @@ import cherry.android.router.api.utils.Utils;
         Object host = getHost(args);
         if (host != null)
             request.setHost(host);
+        Object callback = getCallback(args);
+        if (callback != null)
+            request.callback((RouterCallback) callback);
         return requestAdapter.adapt(request);
     }
 

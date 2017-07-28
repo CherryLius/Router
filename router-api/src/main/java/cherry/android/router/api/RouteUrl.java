@@ -52,7 +52,7 @@ import cherry.android.router.api.utils.Utils;
             return new RouteUrl(this);
         }
 
-        static final Builder parse(@NonNull String baseUrl) {
+        static Builder parse(@NonNull String baseUrl) {
             if (TextUtils.isEmpty(baseUrl) || !Utils.checkRouteValid(baseUrl)) {
                 throw new IllegalArgumentException("invalid url: " + baseUrl);
             }

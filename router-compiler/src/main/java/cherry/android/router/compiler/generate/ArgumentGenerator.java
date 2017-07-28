@@ -15,7 +15,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
-import cherry.android.router.compiler.RoutingFiled;
+import cherry.android.router.compiler.Argument;
 import cherry.android.router.compiler.common.Values;
 import cherry.android.router.compiler.util.Utils;
 
@@ -23,22 +23,22 @@ import cherry.android.router.compiler.util.Utils;
  * Created by Administrator on 2017/6/8.
  */
 
-public class RouteFieldGenerator implements Generator<JavaFile> {
+public class ArgumentGenerator implements Generator<JavaFile> {
 
     private Elements mElementUtils;
     private Types mTypeUtils;
     private TypeElement mClassElement;
-    private List<RoutingFiled> mFieldList;
+    private List<Argument> mFieldList;
 
-    public RouteFieldGenerator(Types typeUtils, Elements elementUtils, TypeElement element) {
+    public ArgumentGenerator(Types typeUtils, Elements elementUtils, TypeElement element) {
         mTypeUtils = typeUtils;
         mElementUtils = elementUtils;
         mClassElement = element;
         mFieldList = new ArrayList<>();
     }
 
-    public void addRouteField(RoutingFiled routingFiled) {
-        mFieldList.add(routingFiled);
+    public void addArgument(Argument argument) {
+        mFieldList.add(argument);
     }
 
     private String getPackageName() {
@@ -73,7 +73,7 @@ public class RouteFieldGenerator implements Generator<JavaFile> {
                 .addStatement("mFieldBundle = $T.newBundle(target)",
                         Values.ROUTE_BUNDLE);
         for (int i = 0; i < mFieldList.size(); i++) {
-            RoutingFiled field = mFieldList.get(i);
+            Argument field = mFieldList.get(i);
             String statement = "target.$N = mFieldBundle.%s($S, target.$N)";
             methodBuilder.addStatement(String.format(statement, getMethodName(field)),
                     field.getFieldName(), field.getKey(), field.getFieldName());
@@ -88,7 +88,7 @@ public class RouteFieldGenerator implements Generator<JavaFile> {
         return methodBuilder.build();
     }
 
-    private String getMethodName(RoutingFiled field) {
+    private String getMethodName(Argument field) {
         String format = "get";
         TypeName fieldType = field.getTypeName();
         System.err.println("typeName=" + fieldType);

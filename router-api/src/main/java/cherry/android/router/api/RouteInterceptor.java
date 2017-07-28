@@ -40,8 +40,7 @@ public class RouteInterceptor implements Comparable<RouteInterceptor> {
     private IInterceptor newInterceptor() {
         try {
             Constructor constructor = interceptor.getConstructor();
-            IInterceptor interceptor = (IInterceptor) constructor.newInstance();
-            return interceptor;
+            return (IInterceptor) constructor.newInstance();
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
@@ -59,7 +58,7 @@ public class RouteInterceptor implements Comparable<RouteInterceptor> {
         if (this.priority != o.priority) {
             return this.priority - o.priority;
         }
-        if (this.name != o.name) {
+        if (!this.name.equals(o.name)) {
             if (TextUtils.isEmpty(this.name)) return -1;
             if (TextUtils.isEmpty(o.name)) return 1;
             return this.name.compareToIgnoreCase(o.name);

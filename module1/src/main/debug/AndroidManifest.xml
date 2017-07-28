@@ -4,7 +4,7 @@
 
     <application
         android:allowBackup="true"
-        android:label="@string/app_name"
+        android:label="@string/module1_app_name"
         android:theme="@style/module1_AppTheme"
         android:supportsRtl="true">
         <activity android:name=".MainActivity">

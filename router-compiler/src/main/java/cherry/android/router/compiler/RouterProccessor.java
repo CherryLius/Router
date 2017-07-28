@@ -23,7 +23,7 @@ import cherry.android.router.annotations.Interceptor;
 import cherry.android.router.annotations.Route;
 import cherry.android.router.annotations.Extra;
 import cherry.android.router.compiler.generate.InterceptorGenerator;
-import cherry.android.router.compiler.generate.RouteFieldGenerator;
+import cherry.android.router.compiler.generate.ArgumentGenerator;
 import cherry.android.router.compiler.generate.RouteGenerator;
 
 import static cherry.android.router.compiler.common.Values.ACTIVITY_CLASS_NAME;
@@ -133,16 +133,16 @@ public class RouterProccessor extends AbstractProcessor {
     }
 
     private void parseRouteFieldTarget(RoundEnvironment roundEnv) {
-        Map<String, RouteFieldGenerator> map = new LinkedHashMap<>();
+        Map<String, ArgumentGenerator> map = new LinkedHashMap<>();
         for (Element element : roundEnv.getElementsAnnotatedWith(Extra.class)) {
             TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
-            RouteFieldGenerator generator = getRouteFieldGenerator(map, enclosingElement);
-            RoutingFiled field = new RoutingFiled(element);
-            generator.addRouteField(field);
+            ArgumentGenerator generator = getRouteFieldGenerator(map, enclosingElement);
+            Argument field = new Argument(element);
+            generator.addArgument(field);
         }
 
         try {
-            for (Map.Entry<String, RouteFieldGenerator> entry : map.entrySet()) {
+            for (Map.Entry<String, ArgumentGenerator> entry : map.entrySet()) {
                 entry.getValue().generate().writeTo(processingEnv.getFiler());
             }
         } catch (IOException e) {
@@ -150,11 +150,11 @@ public class RouterProccessor extends AbstractProcessor {
         }
     }
 
-    private RouteFieldGenerator getRouteFieldGenerator(Map<String, RouteFieldGenerator> map, TypeElement enclosingElement) {
+    private ArgumentGenerator getRouteFieldGenerator(Map<String, ArgumentGenerator> map, TypeElement enclosingElement) {
         String className = enclosingElement.getQualifiedName().toString();
-        RouteFieldGenerator generator = map.get(className);
+        ArgumentGenerator generator = map.get(className);
         if (generator == null) {
-            generator = new RouteFieldGenerator(processingEnv.getTypeUtils(),
+            generator = new ArgumentGenerator(processingEnv.getTypeUtils(),
                     processingEnv.getElementUtils(), enclosingElement);
             map.put(className, generator);
         }

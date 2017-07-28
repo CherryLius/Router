@@ -26,4 +26,5 @@ public interface Request<T, R> {
     void callback(RouterCallback callback);
 
     void setHost(R host);
+
 }
