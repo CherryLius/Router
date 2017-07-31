@@ -257,7 +257,8 @@ import cherry.android.router.api.utils.Utils;
                 Options op = (Options) annotation;
                 options.transition(op.enterAnim(), op.exitAnim())
                         .ignoreInterceptor(op.ignoreInterceptor())
-                        .requestCode(op.requestCode());
+                        .requestCode(op.requestCode())
+                        .flags(op.flags());
             }
         }
 

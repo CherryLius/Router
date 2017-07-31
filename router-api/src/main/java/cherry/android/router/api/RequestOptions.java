@@ -23,6 +23,7 @@ public class RequestOptions {
     private int requestCode;
     private ActivityOptionsCompat optionsCompat;
     private Bundle arguments;
+    private int flags;
 
     RequestOptions() {
         arguments = new Bundle();
@@ -50,18 +51,23 @@ public class RequestOptions {
     }
 
     RequestOptions extra(@NonNull String key, Object value) {
-        Utils.putValue2Bundle(arguments, key, value);
+        Utils.putValue2Bundle(this.arguments, key, value);
         return this;
     }
 
     RequestOptions extra(Bundle value) {
-        arguments.putAll(value);
+        this.arguments.putAll(value);
         return this;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     RequestOptions extra(PersistableBundle value) {
-        arguments.putAll(value);
+        this.arguments.putAll(value);
+        return this;
+    }
+
+    RequestOptions flags(int flags) {
+        this.flags = flags;
         return this;
     }
 
@@ -89,5 +95,9 @@ public class RequestOptions {
 
     public ActivityOptionsCompat getOptionsCompat() {
         return this.optionsCompat;
+    }
+
+    public int getFlags() {
+        return this.flags;
     }
 }

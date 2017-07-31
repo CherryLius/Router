@@ -25,7 +25,11 @@ import cherry.android.router.api.utils.Utils;
         if (queryNamesAndValues.size() == 0)
             return baseUrl;
         StringBuilder builder = new StringBuilder();
-        builder.append(baseUrl).append('?');
+        if (baseUrl.indexOf('?') != -1) {
+            builder.append('&');
+        } else {
+            builder.append(baseUrl).append('?');
+        }
         for (int i = 0; i < queryNamesAndValues.size(); i++) {
             builder.append(queryNamesAndValues.get(i));
             if (i < queryNamesAndValues.size() - 1)

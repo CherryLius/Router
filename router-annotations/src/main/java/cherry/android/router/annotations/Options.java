@@ -20,4 +20,6 @@ public @interface Options {
     int enterAnim() default -1;
 
     int exitAnim() default -1;
+
+    int flags() default -1;
 }

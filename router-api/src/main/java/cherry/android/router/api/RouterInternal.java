@@ -38,7 +38,7 @@ public final class RouterInternal {
     private static final String TAG = "RouterInternal";
     private static final String PACKAGE_NAME = "cherry.android.router";
 
-    private static RouterInternal sInstance;
+    private static volatile RouterInternal sInstance;
 
     private Map<String, RouteRule> mRouterTable = new RouteMap();
     private Map<String, RouteInterceptor> mInterceptorMap = new LinkedHashMap<>();
@@ -230,6 +230,15 @@ public final class RouterInternal {
             RequestOptions options = mRequest.getOptions();
             if (options != null)
                 options.ignoreInterceptor(ignore);
+        }
+        return this;
+    }
+
+    public RouterInternal flags(int flags) {
+        if (mRequest != null) {
+            RequestOptions options = mRequest.getOptions();
+            if (options != null)
+                options.flags(flags);
         }
         return this;
     }

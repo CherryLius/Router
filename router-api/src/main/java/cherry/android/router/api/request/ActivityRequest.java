@@ -44,6 +44,9 @@ public class ActivityRequest<R> extends AbstractRequest<Intent, R> {
         if (!(context instanceof Activity)) {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         }
+        if (this.options != null && this.options.getFlags() != -1) {
+            intent.addFlags(this.options.getFlags());
+        }
         return intent;
     }
 

@@ -39,6 +39,7 @@ public interface ActivityService {
                        @NonNull RouterCallback callback);
 
     @ClassName(Route1Activity.class)
+    @Options(flags = Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP)
     void route1(@OptionsCompat ActivityOptionsCompat compat);
 
     @URL("cherry://activity/route2")
