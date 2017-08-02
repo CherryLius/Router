@@ -22,7 +22,7 @@ public class Route1Activity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_route1);
-        Router.bind(this);
+        Router.inject(this);
         TextView textView = (TextView) findViewById(R.id.textView);
         TextView textView1 = (TextView) findViewById(R.id.textView_1);
         textView.setText("id=" + mId + ",name=" + name

@@ -70,8 +70,10 @@ public class ArgumentGenerator implements Generator<JavaFile> {
         MethodSpec.Builder methodBuilder = MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(getTypeName(), "target", Modifier.FINAL)
-                .addStatement("mFieldBundle = $T.newBundle(target)",
-                        Values.ROUTE_BUNDLE);
+                .addParameter(Values.ROUTE_BUNDLE, "bundle", Modifier.FINAL)
+                .addStatement("this.mFieldBundle = bundle");
+                /*.addStatement("mFieldBundle = $T.newBundle(target)",
+                        Values.ROUTE_BUNDLE);*/
         for (int i = 0; i < mFieldList.size(); i++) {
             Argument field = mFieldList.get(i);
             String statement = "target.$N = mFieldBundle.%s($S, target.$N)";

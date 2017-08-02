@@ -3,6 +3,7 @@ package cherry.android.router.api;
 import android.app.Activity;
 import android.content.Context;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 
@@ -14,6 +15,7 @@ import java.lang.reflect.Proxy;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import cherry.android.router.api.bundle.FieldBundle;
 import cherry.android.router.api.intercept.IInterceptor;
 import cherry.android.router.api.utils.Logger;
 import cherry.android.router.api.utils.Utils;
@@ -109,19 +111,23 @@ public final class Router {
         Map<String, Class<?>> pick();
     }
 
-    public static void bind(Activity activity) {
-        createRouter(activity);
+    public static void inject(Activity activity) {
+        createRouter(activity, FieldBundle.newBundle(activity));
     }
 
-    public static void bind(Fragment fragment) {
-        createRouter(fragment);
+    public static void inject(Fragment fragment) {
+        createRouter(fragment, FieldBundle.newBundle(fragment));
     }
 
-    public static void bind(android.app.Fragment fragment) {
-        createRouter(fragment);
+    public static void inject(android.app.Fragment fragment) {
+        createRouter(fragment, FieldBundle.newBundle(fragment));
     }
 
-    private static void createRouter(Object target) {
+    public static void inject(Object target, Bundle bundle) {
+        createRouter(target, FieldBundle.newBundle(bundle));
+    }
+
+    private static void createRouter(Object target, FieldBundle bundle) {
         Class<?> targetClass = target.getClass();
         Constructor<?> constructor = findRouterConstructor(targetClass);
         if (constructor == null) {
@@ -129,7 +135,7 @@ public final class Router {
             return;
         }
         try {
-            constructor.newInstance(target);
+            constructor.newInstance(target, bundle);
         } catch (InstantiationException e) {
             throw new RuntimeException("Unable to toRequest " + constructor, e);
         } catch (IllegalAccessException e) {
@@ -154,7 +160,7 @@ public final class Router {
         Logger.i(TAG, "target class=" + className);
         try {
             Class<?> routerClass = Class.forName(className + "_Router");
-            constructor = routerClass.getConstructor(targetClass);
+            constructor = routerClass.getConstructor(targetClass, FieldBundle.class);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
             constructor = findRouterConstructor(targetClass.getSuperclass());

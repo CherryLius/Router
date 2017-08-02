@@ -21,7 +21,7 @@ public class WebActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_web);
         webView = (WebView) findViewById(R.id.web_view);
-        Router.bind(this);
+        Router.inject(this);
         Logger.i("Test", "url=" + url);
         webView.loadUrl(url);
     }

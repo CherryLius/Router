@@ -154,6 +154,10 @@ public class FieldBundle {
         return (T) mBundle.getSerializable(key);
     }
 
+    public static FieldBundle newBundle(Bundle bundle) {
+        return new FieldBundle(bundle);
+    }
+
     public static FieldBundle newBundle(Activity activity) {
         Intent intent = activity.getIntent();
         return new FieldBundle(intent.getExtras(), intent.getData());
