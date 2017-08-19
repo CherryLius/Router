@@ -108,6 +108,7 @@ import cherry.android.router.api.utils.Utils;
         if (argsCount != params.length)
             throw new IllegalArgumentException("Arguments count (" + argsCount
                     + ") doesn't match expected count(" + params.length + ")");
+        this.options.getArguments().clear();
         if (className != null) {
             Logger.d(TAG, "classRequest");
             return classRequest(params, args);
