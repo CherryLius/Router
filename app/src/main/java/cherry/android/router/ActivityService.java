@@ -30,7 +30,7 @@ public interface ActivityService {
     @URL("/activity/route1")
     void startActivity(@Query("name") String name,
                        @Query("id") int id,
-                       @Query("object") Object object);
+                       @Query("user") User user);
 
     @URL("/activity/movie/detail")
     void startActivity(@Query("name") String name,

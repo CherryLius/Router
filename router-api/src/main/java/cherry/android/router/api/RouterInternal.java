@@ -12,11 +12,17 @@ import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.text.TextUtils;
 
+import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import cherry.android.router.api.callback.RouterCallback;
+import cherry.android.router.api.convert.Converter;
+import cherry.android.router.api.convert.DefaultStringConvert;
 import cherry.android.router.api.intercept.IInterceptor;
 import cherry.android.router.api.request.AbstractRequest;
 import cherry.android.router.api.request.ActionRequest;
@@ -283,5 +289,36 @@ public final class RouterInternal {
             throw new NullPointerException("request Null");
         }
         return (T) mRequest.invoke();
+    }
+
+    public <T> Converter<T, String> stringConverter(Type type, Annotation annotation) {
+        for (int i = 0; i < mConverterFactories.size(); i++) {
+            Converter converter = mConverterFactories.get(i).stringConverter(type);
+            if (converter != null)
+                return converter;
+        }
+        return new DefaultStringConvert<>();
+    }
+
+    public <R> Converter<String, R> classConverter(Type type, Annotation annotation) {
+        for (int i = 0; i < mConverterFactories.size(); i++) {
+            Converter converter = mConverterFactories.get(i).classConverter(type);
+            if (converter != null)
+                return converter;
+        }
+        return new Converter<String, R>() {
+            @Override
+            public R convert(String s) throws IOException {
+                return null;
+            }
+        };
+    }
+
+    private final List<Converter.Factory> mConverterFactories = new ArrayList<>();
+
+    public void addConverterFactory(@NonNull Converter.Factory factory) {
+        if (mConverterFactories.contains(factory))
+            return;
+        mConverterFactories.add(factory);
     }
 }

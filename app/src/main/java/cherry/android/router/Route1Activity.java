@@ -16,7 +16,7 @@ public class Route1Activity extends AppCompatActivity {
     @Extra
     String name;
     @Extra
-    Object object;
+    String user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,7 +26,7 @@ public class Route1Activity extends AppCompatActivity {
         TextView textView = (TextView) findViewById(R.id.textView);
         TextView textView1 = (TextView) findViewById(R.id.textView_1);
         textView.setText("id=" + mId + ",name=" + name
-                + ", object=" + object);
+                + ", user=" + user);
         if (getIntent().getExtras() != null) {
             StringBuilder sb = new StringBuilder();
             for (String key : getIntent().getExtras().keySet()) {

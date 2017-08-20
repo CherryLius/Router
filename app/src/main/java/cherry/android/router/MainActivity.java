@@ -22,6 +22,7 @@ import cherry.android.router.api.callback.RouterCallback;
 import cherry.android.router.api.intercept.IInterceptor;
 import cherry.android.router.api.request.Request;
 import cherry.android.router.api.utils.Logger;
+import cherry.android.router.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -76,6 +77,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Router.openLog(true, true);
                 Router.openDebug();
                 Router.init(this);
+                Router.addConverterFactory(GsonConverterFactory.create());
                 Router.addRoutePicker(new Router.RoutePicker() {
                     @Override
                     public Map<String, Class<?>> pick() {
@@ -120,7 +122,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.button_2:
 //                Router.build("activity://cherry/route1?id=1&name=route1").open();
                 ActivityService activityService = Router.create(ActivityService.class);
-                activityService.startActivity("动态代理", 1222, false, 1);
+//                activityService.startActivity("动态代理", 1222, false, 1);
+                activityService.startActivity("user", 1, new User("Tom", 20));
                 break;
             case R.id.button_3:
                 Router.build("/activity/route1?name=建国大业&id=1000").requestCode(100)

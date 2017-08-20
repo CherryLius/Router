@@ -7,6 +7,7 @@ import android.text.TextUtils;
 
 import com.android.internal.util.Predicate;
 
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -21,6 +22,7 @@ import cherry.android.router.annotations.Uri;
 import cherry.android.router.api.adapter.RequestAdapter;
 import cherry.android.router.api.adapter.RouteAdapter;
 import cherry.android.router.api.callback.RouterCallback;
+import cherry.android.router.api.convert.Converter;
 import cherry.android.router.api.request.AbstractRequest;
 import cherry.android.router.api.request.ActionRequest;
 import cherry.android.router.api.request.ActivityRequest;
@@ -35,6 +37,7 @@ import cherry.android.router.api.utils.Utils;
  */
 /*package-private*/ class ServiceMethod {
     private static final String TAG = "ServiceMethod";
+    private final RouterInternal routerInternal;
     private Class<?> className;
     private String baseUrl;
     private String action;
@@ -44,6 +47,7 @@ import cherry.android.router.api.utils.Utils;
     private RequestAdapter requestAdapter;
 
     private ServiceMethod(Builder builder) {
+        this.routerInternal = builder.routerInternal;
         this.className = builder.className;
         this.baseUrl = builder.baseUrl;
         this.action = builder.action;
@@ -103,23 +107,28 @@ import cherry.android.router.api.utils.Utils;
     }
 
     private Request toRequest(Object[] args) {
-        Parameter<Object, Object>[] params = (Parameter<Object, Object>[]) parameters;
-        final int argsCount = args != null ? args.length : 0;
-        if (argsCount != params.length)
-            throw new IllegalArgumentException("Arguments count (" + argsCount
-                    + ") doesn't match expected count(" + params.length + ")");
-        this.options.getArguments().clear();
-        if (className != null) {
-            Logger.d(TAG, "classRequest");
-            return classRequest(params, args);
-        } else if (action != null) {
-            Logger.d(TAG, "actionRequest");
-            return actionRequest(params, args);
+        try {
+            Parameter<Object, Object>[] params = (Parameter<Object, Object>[]) parameters;
+            final int argsCount = args != null ? args.length : 0;
+            if (argsCount != params.length)
+                throw new IllegalArgumentException("Arguments count (" + argsCount
+                        + ") doesn't match expected count(" + params.length + ")");
+            this.options.getArguments().clear();
+            if (className != null) {
+                Logger.d(TAG, "classRequest");
+                return classRequest(params, args);
+            } else if (action != null) {
+                Logger.d(TAG, "actionRequest");
+                return actionRequest(params, args);
+            }
+            return urlRequest(params, args);
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-        return urlRequest(params, args);
     }
 
-    private Request urlRequest(Parameter<Object, Object>[] parameters, Object[] args) {
+    private Request urlRequest(Parameter<Object, Object>[] parameters, Object[] args) throws IOException {
         RouteUrl.Builder builder = RouteUrl.Builder.parse(this.baseUrl);
         for (int i = 0; i < parameters.length; i++) {
             if (parameters[i] == null)
@@ -129,7 +138,7 @@ import cherry.android.router.api.utils.Utils;
         RouteUrl routeUrl = builder.build();
         String url = routeUrl.toUrl();
         Logger.i(TAG, "urlRequest=" + url);
-        RouteRule rule = RouterInternal.get().getRouteRule(url);
+        RouteRule rule = this.routerInternal.getRouteRule(url);
         if (rule == null)
             return new UnKnownRequest(url);
         Request request;
@@ -141,9 +150,9 @@ import cherry.android.router.api.utils.Utils;
         return request;
     }
 
-    private Request classRequest(Parameter<Object, Object>[] parameters, Object[] args) {
+    private Request classRequest(Parameter<Object, Object>[] parameters, Object[] args) throws IOException {
         AbstractRequest request;
-        RouteRule rule = RouterInternal.get().getRouteRule(className);
+        RouteRule rule = this.routerInternal.getRouteRule(className);
         if (rule == null) {
             if (Utils.isActivity(className)) {
                 request = new ActivityRequest(className);
@@ -165,7 +174,7 @@ import cherry.android.router.api.utils.Utils;
         return request;
     }
 
-    private Request actionRequest(Parameter<Object, Object>[] parameters, Object[] args) {
+    private Request actionRequest(Parameter<Object, Object>[] parameters, Object[] args) throws IOException {
         ActionRequest request = new ActionRequest.Builder()
                 .setAction(action)
                 .setType(mimeType).build();
@@ -180,23 +189,26 @@ import cherry.android.router.api.utils.Utils;
 
     static class Builder {
         private static final String TAG = "Builder";
+        private RouterInternal routerInternal;
         private Class<?> className;
         private String baseUrl;
         private String action;
         private String mimeType;
-        final Annotation[] methodAnnotations;
-        final Annotation[][] parameterAnnotationArray;
+        private final Annotation[] methodAnnotations;
+        private final Annotation[][] parameterAnnotationArray;
         private Parameter<?, ?>[] parameters;
-        private Type returnType;
+        private final Type[] parameterTypes;
+        private final Type returnType;
         private RequestOptions options;
 
-        Builder(@NonNull Method method) {
+        Builder(@NonNull RouterInternal routerInternal, @NonNull Method method) {
             Logger.i(TAG, "method=" + method);
+            this.routerInternal = routerInternal;
             this.methodAnnotations = method.getAnnotations();
             this.parameterAnnotationArray = method.getParameterAnnotations();
-            Type[] types = method.getGenericParameterTypes();
-            for (int i = 0; i < types.length; i++) {
-                Logger.e(TAG, "types[" + i + "]=" + types[i]);
+            parameterTypes = method.getGenericParameterTypes();
+            for (int i = 0; i < parameterTypes.length; i++) {
+                Logger.e(TAG, "types[" + i + "]=" + parameterTypes[i]);
             }
             returnType = method.getGenericReturnType();
             Logger.i(TAG, "GenericReturnType=" + returnType);
@@ -222,19 +234,30 @@ import cherry.android.router.api.utils.Utils;
             parameters = new Parameter[length];
             for (int i = 0; i < length; i++) {
                 Annotation[] annotations = parameterAnnotationArray[i];
+                Type parameterType = this.parameterTypes[i];
                 if (annotations.length > 1)
                     throw new IllegalArgumentException("Service method's one Parameter should have at most one Annotation.");
                 for (Annotation annotation : annotations) {
                     if (annotation instanceof Query) {
                         Query query = (Query) annotation;
+                        Converter<Object, String> converter = this.routerInternal.stringConverter(parameterType, annotation);
+                        Converter<String,Object> converter1 = this.routerInternal.classConverter(parameterType,annotation);
                         if (!TextUtils.isEmpty(baseUrl)) {
-                            parameters[i] = new Parameter.QueryURL<>(query.value());
+                            parameters[i] = new Parameter.QueryURL<>(query.value(), converter);
                         } else {
-                            parameters[i] = new Parameter.QueryRequest<>(query.value());
+                            parameters[i] = new Parameter.QueryRequest<>(query.value(), converter);
                         }
+//                        try {
+//                            Logger.e("Test", " convert1=" + converter.convert(query.value()));
+//                            Logger.e("Test", " convert2=" + converter1.convert(converter.convert(query.value())));
+//
+//                        } catch (IOException e) {
+//                            e.printStackTrace();
+//                        }
                     } else if (annotation instanceof Uri) {
                         Uri uri = (Uri) annotation;
-                        parameters[i] = new Parameter.UriRequest<>(uri.value());
+                        Converter<?, String> converter = this.routerInternal.stringConverter(parameterType, annotation);
+                        parameters[i] = new Parameter.UriRequest<>(uri.value(), converter);
                     } else if (annotation instanceof OptionsCompat) {
                         parameters[i] = new Parameter.OptionsCompat<>(null);
                     }

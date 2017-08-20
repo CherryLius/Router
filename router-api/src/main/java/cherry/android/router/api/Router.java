@@ -16,6 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import cherry.android.router.api.bundle.FieldBundle;
+import cherry.android.router.api.convert.Converter;
 import cherry.android.router.api.intercept.IInterceptor;
 import cherry.android.router.api.utils.Logger;
 import cherry.android.router.api.utils.Utils;
@@ -97,9 +98,13 @@ public final class Router {
         ServiceMethod serviceMethod = SERVICE_METHOD.get(method);
         if (serviceMethod != null)
             return serviceMethod;
-        serviceMethod = new ServiceMethod.Builder(method).build();
+        serviceMethod = new ServiceMethod.Builder(RouterInternal.get(), method).build();
         SERVICE_METHOD.put(method, serviceMethod);
         return serviceMethod;
+    }
+
+    public static void addConverterFactory(@NonNull Converter.Factory factory){
+        RouterInternal.get().addConverterFactory(factory);
     }
 
     public static void destroy() {
