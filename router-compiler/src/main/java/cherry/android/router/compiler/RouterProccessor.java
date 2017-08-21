@@ -19,9 +19,9 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.tools.Diagnostic;
 
+import cherry.android.router.annotations.Args;
 import cherry.android.router.annotations.Interceptor;
 import cherry.android.router.annotations.Route;
-import cherry.android.router.annotations.Extra;
 import cherry.android.router.compiler.generate.InterceptorGenerator;
 import cherry.android.router.compiler.generate.ArgumentGenerator;
 import cherry.android.router.compiler.generate.RouteGenerator;
@@ -71,7 +71,7 @@ public class RouterProccessor extends AbstractProcessor {
         Set<Class<? extends Annotation>> annotations = new HashSet<>();
         annotations.add(Route.class);
         annotations.add(Interceptor.class);
-        annotations.add(Extra.class);
+        annotations.add(Args.class);
         return annotations;
     }
 
@@ -134,9 +134,9 @@ public class RouterProccessor extends AbstractProcessor {
 
     private void parseRouteFieldTarget(RoundEnvironment roundEnv) {
         Map<String, ArgumentGenerator> map = new LinkedHashMap<>();
-        for (Element element : roundEnv.getElementsAnnotatedWith(Extra.class)) {
+        for (Element element : roundEnv.getElementsAnnotatedWith(Args.class)) {
             TypeElement enclosingElement = (TypeElement) element.getEnclosingElement();
-            ArgumentGenerator generator = getRouteFieldGenerator(map, enclosingElement);
+            ArgumentGenerator generator = getRouteArgumentGenerator(map, enclosingElement);
             Argument field = new Argument(element);
             generator.addArgument(field);
         }
@@ -150,7 +150,7 @@ public class RouterProccessor extends AbstractProcessor {
         }
     }
 
-    private ArgumentGenerator getRouteFieldGenerator(Map<String, ArgumentGenerator> map, TypeElement enclosingElement) {
+    private ArgumentGenerator getRouteArgumentGenerator(Map<String, ArgumentGenerator> map, TypeElement enclosingElement) {
         String className = enclosingElement.getQualifiedName().toString();
         ArgumentGenerator generator = map.get(className);
         if (generator == null) {

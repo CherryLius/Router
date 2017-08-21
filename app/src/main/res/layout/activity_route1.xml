@@ -6,11 +6,25 @@
     android:orientation="vertical"
     tools:context="cherry.android.router.Route1Activity">
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Inject value:" />
+
     <android.support.v7.widget.AppCompatTextView
         android:id="@+id/textView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Route1" />
+
+    <android.support.v4.widget.Space
+        android:layout_width="match_parent"
+        android:layout_height="10dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Bundle value:" />
 
     <android.support.v7.widget.AppCompatTextView
         android:id="@+id/textView_1"

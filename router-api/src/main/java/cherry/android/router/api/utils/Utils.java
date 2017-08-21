@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,6 +33,8 @@ import java.util.regex.Pattern;
 import cherry.android.router.api.Picker;
 import cherry.android.router.api.RouteRule;
 import cherry.android.router.api.Router;
+import cherry.android.router.api.RouterInternal;
+import cherry.android.router.api.convert.Converter;
 import dalvik.system.DexFile;
 
 import static cherry.android.router.api.RouteRule.TYPE_ACTIVITY;
@@ -362,5 +365,71 @@ public class Utils {
         } while (start < query.length());
 
         return Collections.unmodifiableMap(paramMap);
+    }
+
+    private static final Class<?>[] RAW_CLASS = {
+            byte.class,
+            char.class,
+            int.class,
+            long.class,
+            short.class,
+            float.class,
+            double.class,
+            boolean.class
+    };
+
+    public static boolean isJsonType(Type type) {
+        if (type.equals(String.class)) {
+            return false;
+        }
+        Class<?> typeClass = (Class<?>) type;
+        if (Number.class.isAssignableFrom(typeClass))//基本数据类型的包装类，除Boolean
+            return false;
+        if (Boolean.class.isAssignableFrom(typeClass))
+            return false;
+        return !typeClass.isPrimitive();//8个基本数据类型
+    }
+
+    public static <T> T fromJson(Type type, String json) {
+        if (TextUtils.isEmpty(json))
+            return null;
+        try {
+            Converter<String, T> converter = RouterInternal.get().classConverter(type, null);
+            if (converter != null)
+                return converter.convert(json);
+            return null;
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new IllegalArgumentException("convert from json Error.", e);
+        }
+    }
+
+    public static boolean isGoodJson(String text) {
+        if (TextUtils.isEmpty(text))
+            return false;
+        return (text.charAt(0) == '{' && text.charAt(text.length() - 1) == '}')
+                || (text.startsWith("[{") && text.endsWith("}]"));
+    }
+
+    public static boolean isGoodJson(Class<?> clazz, Object value) {
+        if (value == null)
+            return false;
+        if (clazz.isAssignableFrom(value.getClass())) {
+            return false;
+        }
+        String text = String.valueOf(value);
+        return isGoodJson(text);
+    }
+
+    public static <T> T cast(Class<T> cls, Object value, String name, String className) {
+        if (value == null)
+            return null;
+        try {
+            return cls.cast(value);
+        } catch (Exception e) {
+            String message = String.format("field '%s' in '%s' cast %s Error.",
+                    name, className, cls.getCanonicalName());
+            throw new RuntimeException(message, e);
+        }
     }
 }

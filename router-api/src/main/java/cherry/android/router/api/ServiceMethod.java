@@ -241,23 +241,14 @@ import cherry.android.router.api.utils.Utils;
                     if (annotation instanceof Query) {
                         Query query = (Query) annotation;
                         Converter<Object, String> converter = this.routerInternal.stringConverter(parameterType, annotation);
-                        Converter<String,Object> converter1 = this.routerInternal.classConverter(parameterType,annotation);
                         if (!TextUtils.isEmpty(baseUrl)) {
                             parameters[i] = new Parameter.QueryURL<>(query.value(), converter);
                         } else {
                             parameters[i] = new Parameter.QueryRequest<>(query.value(), converter);
                         }
-//                        try {
-//                            Logger.e("Test", " convert1=" + converter.convert(query.value()));
-//                            Logger.e("Test", " convert2=" + converter1.convert(converter.convert(query.value())));
-//
-//                        } catch (IOException e) {
-//                            e.printStackTrace();
-//                        }
                     } else if (annotation instanceof Uri) {
                         Uri uri = (Uri) annotation;
-                        Converter<?, String> converter = this.routerInternal.stringConverter(parameterType, annotation);
-                        parameters[i] = new Parameter.UriRequest<>(uri.value(), converter);
+                        parameters[i] = new Parameter.UriRequest<>(uri.value());
                     } else if (annotation instanceof OptionsCompat) {
                         parameters[i] = new Parameter.OptionsCompat<>(null);
                     }

@@ -4,7 +4,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.webkit.WebView;
 
-import cherry.android.router.annotations.Extra;
+import cherry.android.router.annotations.Args;
 import cherry.android.router.annotations.Route;
 import cherry.android.router.api.Router;
 import cherry.android.router.api.utils.Logger;
@@ -13,7 +13,7 @@ import cherry.android.router.api.utils.Logger;
 public class WebActivity extends AppCompatActivity {
 
     WebView webView;
-    @Extra
+    @Args
     String url;
 
     @Override

@@ -30,7 +30,7 @@ public class Route2Activity extends AppCompatActivity implements View.OnClickLis
                         .append(getIntent().getExtras().get(key))
                         .append('\n');
             }
-            textView.setText("Extra=\n" + sb.toString());
+            textView.setText("Args=\n" + sb.toString());
         }
     }
 

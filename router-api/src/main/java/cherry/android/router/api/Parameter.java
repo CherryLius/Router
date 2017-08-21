@@ -61,16 +61,14 @@ import cherry.android.router.api.request.Request;
 
     static class UriRequest<R> extends Parameter<ActionRequest, R> {
 
-        UriRequest(String name, Converter<R, String> converter) {
-            super(name, converter);
+        UriRequest(String name) {
+            super(name, null);
         }
 
         @Override
         void apply(ActionRequest request, R args) throws IOException {
             if (args == null) return;
-            String value = converter.convert(args);
-            if (value == null) return;
-            request.setData(value);
+            request.setData(args.toString());
         }
     }
 

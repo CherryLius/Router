@@ -15,7 +15,7 @@ buildscript {
         //自动化maven打包插件
         classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
         //自动上传至Bintray平台插件
-        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.2"
+        classpath "com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3"
         classpath 'cherry.android.plugins:router-plugin:1.1.0'
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files

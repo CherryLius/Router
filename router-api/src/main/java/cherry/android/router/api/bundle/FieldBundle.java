@@ -42,8 +42,9 @@ public class FieldBundle {
         return object;
     }
 
-    public Object get(String key, Object value) {
-        return get(key);
+    public <T> T get(String key, T value) {
+        Object ret = get(key);
+        return ret == null ? value : (T) ret;
     }
 
     public int getInt(String key, int defaultValue) {

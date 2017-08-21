@@ -14,7 +14,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import cherry.android.router.api.Router;
@@ -23,6 +25,9 @@ import cherry.android.router.api.intercept.IInterceptor;
 import cherry.android.router.api.request.Request;
 import cherry.android.router.api.utils.Logger;
 import cherry.android.router.converter.gson.GsonConverterFactory;
+import cherry.android.router.model.ParcelableFoo;
+import cherry.android.router.model.SeriFoo;
+import cherry.android.router.model.User;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -68,6 +73,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         findViewById(R.id.button_4).setOnClickListener(this);
         findViewById(R.id.button_5).setOnClickListener(this);
         findViewById(R.id.button_6).setOnClickListener(this);
+        findViewById(R.id.button_7).setOnClickListener(this);
+        findViewById(R.id.button_100).setOnClickListener(this);
     }
 
     @Override
@@ -120,15 +127,30 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
             case R.id.button_2:
-//                Router.build("activity://cherry/route1?id=1&name=route1").open();
                 ActivityService activityService = Router.create(ActivityService.class);
 //                activityService.startActivity("动态代理", 1222, false, 1);
-                activityService.startActivity("user", 1, new User("Tom", 20));
+//                activityService.startActivity("user", 1, new User("Tom", 20));
+                activityService.startActivity("user", 1, new User("Tom", 20),
+                        new SeriFoo("Seri", 1),
+                        new ParcelableFoo("parcel", 2));
+                break;
+            case R.id.button_7:
+                List<User> users = new ArrayList<>();
+                users.add(new User("222", 222));
+                users.add(new User("333", 333));
+                Router.build("cherry://activity/route1?id=1&name=route1")
+                        .extra("parcel", new ParcelableFoo("routeOpen", 2))
+                        .extra("seri", new SeriFoo("seri", 44))
+                        .extra("user", new User("111", 111))
+                        .extra("users", users)
+                        .open();
                 break;
             case R.id.button_3:
-                Router.build("/activity/route1?name=建国大业&id=1000").requestCode(100)
-                        .transition(R.anim.slide_in_bottom, R.anim.slide_out_bottom)
-                        .open(this);
+                activityService = Router.create(ActivityService.class);
+                activityService.startActivity(null, 111, false, 0);
+//                Router.build("/activity/route1?name=建国大业&id=1000").requestCode(100)
+//                        .transition(R.anim.slide_in_bottom, R.anim.slide_out_bottom)
+//                        .open(this);
                 break;
             case R.id.button_4:
                 Router.build("module1://activity/main").open();

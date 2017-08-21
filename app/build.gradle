@@ -1,5 +1,4 @@
 apply plugin: 'com.android.application'
-apply plugin: 'com.neenbedankt.android-apt'
 apply plugin: 'router.plugin'
 
 android {
@@ -34,7 +33,7 @@ dependencies {
     })
     compile project(':router-annotations')
     compile project(':router-api')
-    apt project(':router-compiler')
+    annotationProcessor project(':router-compiler')
     if (moduleBuild.toBoolean())
         compile project(':module1')
     compile 'com.android.support:appcompat-v7:25.3.1'

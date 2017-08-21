@@ -16,6 +16,7 @@ import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 
 import cherry.android.router.compiler.Argument;
+import cherry.android.router.compiler.common.TypeKind;
 import cherry.android.router.compiler.common.Values;
 import cherry.android.router.compiler.util.Utils;
 
@@ -74,11 +75,45 @@ public class ArgumentGenerator implements Generator<JavaFile> {
                 .addStatement("this.mFieldBundle = bundle");
                 /*.addStatement("mFieldBundle = $T.newBundle(target)",
                         Values.ROUTE_BUNDLE);*/
+        methodBuilder.addCode("Object value;\n");
         for (int i = 0; i < mFieldList.size(); i++) {
             Argument field = mFieldList.get(i);
             String statement = "target.$N = mFieldBundle.%s($S, target.$N)";
-            methodBuilder.addStatement(String.format(statement, getMethodName(field)),
-                    field.getFieldName(), field.getKey(), field.getFieldName());
+            int type = getKindType(field);
+            String methodName = getMethodName(field);
+
+            if (type == TypeKind.OBJECT.ordinal()
+                    || type == TypeKind.SERIALIZABLE.ordinal()
+                    || type == TypeKind.PARCELABLE.ordinal()) {
+                methodBuilder.addStatement("value=mFieldBundle.get($S, target.$N)", field.getKey(), field.getFieldName());
+                //if ()
+                methodBuilder.beginControlFlow("if ($T.isGoodJson($T.class, value))", Values.ROUTE_UTILS, field.getTypeName());
+                methodBuilder.addStatement("target.$N = $T.fromJson($T.class, String.valueOf(value))",
+                        field.getFieldName(), Values.ROUTE_UTILS, field.getTypeName());
+                methodBuilder.endControlFlow();
+
+                //else
+                methodBuilder.beginControlFlow("else");
+                methodBuilder.addStatement("target.$N = $T.cast($T.class, value, $S, $S)",
+                        field.getFieldName(),
+                        Values.ROUTE_UTILS,
+                        field.getTypeName(),
+                        field.getFieldName(),
+                        getClassName());
+                methodBuilder.endControlFlow();
+            }
+
+            if (type == TypeKind.OBJECT.ordinal()
+                    || type == TypeKind.SERIALIZABLE.ordinal()
+                    || type == TypeKind.PARCELABLE.ordinal()) {
+                methodBuilder.beginControlFlow("if (target.$N == null)", field.getFieldName());
+                methodBuilder.addStatement(String.format(statement, methodName),
+                        field.getFieldName(), field.getKey(), field.getFieldName());
+                methodBuilder.endControlFlow();
+            } else {
+                methodBuilder.addStatement(String.format(statement, methodName),
+                        field.getFieldName(), field.getKey(), field.getFieldName());
+            }
             if (field.isNonNull()) {
                 methodBuilder.addStatement("$T.checkNonNull(target.$N, $S, $S)",
                         Values.ROUTE_UTILS,
@@ -92,36 +127,35 @@ public class ArgumentGenerator implements Generator<JavaFile> {
 
     private String getMethodName(Argument field) {
         String format = "get";
-        TypeName fieldType = field.getTypeName();
-        System.err.println("typeName=" + fieldType);
-        if (fieldType.equals(TypeName.INT)) {
+        final int filedType = getKindType(field);
+        if (filedType == TypeKind.INT.ordinal()) {
             format = "getInt";
-        } else if (fieldType.equals(TypeName.BOOLEAN)) {
+        } else if (filedType == TypeKind.BOOLEAN.ordinal()) {
             format = "getBoolean";
-        } else if (fieldType.equals(TypeName.BYTE)) {
+        } else if (filedType == TypeKind.BYTE.ordinal()) {
             format = "getByte";
-        } else if (fieldType.equals(TypeName.DOUBLE)) {
+        } else if (filedType == TypeKind.DOUBLE.ordinal()) {
             format = "getDouble";
-        } else if (fieldType.equals(TypeName.FLOAT)) {
+        } else if (filedType == TypeKind.FLOAT.ordinal()) {
             format = "getFloat";
-        } else if (fieldType.equals(TypeName.LONG)) {
+        } else if (filedType == TypeKind.LONG.ordinal()) {
             format = "getLong";
-        } else if (fieldType.equals(TypeName.SHORT)) {
+        } else if (filedType == TypeKind.SHORT.ordinal()) {
             format = "getShort";
-        } else if (fieldType.equals(Utils.getTypeName(mElementUtils,
-                String.class.getCanonicalName()))) {
+        } else if (filedType == TypeKind.STRING.ordinal()) {
             format = "getString";
-        } else if (fieldType.equals(TypeName.CHAR)) {
+        } else if (filedType == TypeKind.CHAR.ordinal()) {
             format = "getCharacter";
-        } else if (fieldType.equals(Values.ANDROID_OS_BUNDLE)) {
+        } else if (filedType == TypeKind.BUNDLE.ordinal()) {
             format = "getBundle";
-        } else if (isSubType(field.asType(),
-                CharSequence.class.getCanonicalName())) {
+        } else if (filedType == TypeKind.CHARSEQUENCE.ordinal()) {
             format = "getCharSequence";
-        } else if (isSubType(field.asType(), Values.PARCELABLE_NAME)) {
+        } else if (filedType == TypeKind.PARCELABLE.ordinal()) {
             format = "getParcelable";
-        } else if (isSubType(field.asType(), Serializable.class.getCanonicalName())) {
+        } else if (filedType == TypeKind.SERIALIZABLE.ordinal()) {
             format = "getSerializable";
+        } else if (filedType == TypeKind.OBJECT.ordinal()) {
+            format = "get";
         }
         return format;
     }
@@ -129,5 +163,43 @@ public class ArgumentGenerator implements Generator<JavaFile> {
     private boolean isSubType(TypeMirror typeMirror, String type) {
         return Utils.isSubType(mTypeUtils, typeMirror,
                 Utils.getTypeMirror(mElementUtils, type));
+    }
+
+    private int getKindType(Argument field) {
+        TypeMirror typeMirror = field.asType();
+        if (typeMirror.getKind().isPrimitive())
+            return typeMirror.getKind().ordinal();
+        TypeName fieldType = field.getTypeName();
+        if (fieldType.equals(TypeName.INT)) {
+            return TypeKind.INT.ordinal();
+        } else if (fieldType.equals(TypeName.BOOLEAN)) {
+            return TypeKind.BOOLEAN.ordinal();
+        } else if (fieldType.equals(TypeName.BYTE)) {
+            return TypeKind.BYTE.ordinal();
+        } else if (fieldType.equals(TypeName.DOUBLE)) {
+            return TypeKind.DOUBLE.ordinal();
+        } else if (fieldType.equals(TypeName.FLOAT)) {
+            return TypeKind.FLOAT.ordinal();
+        } else if (fieldType.equals(TypeName.LONG)) {
+            return TypeKind.LONG.ordinal();
+        } else if (fieldType.equals(TypeName.SHORT)) {
+            return TypeKind.SHORT.ordinal();
+        } else if (fieldType.equals(Utils.getTypeName(mElementUtils,
+                String.class.getCanonicalName()))) {
+            return TypeKind.STRING.ordinal();
+        } else if (fieldType.equals(TypeName.CHAR)) {
+            return TypeKind.CHAR.ordinal();
+        } else if (fieldType.equals(Values.ANDROID_OS_BUNDLE)) {
+            return TypeKind.BUNDLE.ordinal();
+        } else if (isSubType(field.asType(),
+                CharSequence.class.getCanonicalName())) {
+            return TypeKind.CHARSEQUENCE.ordinal();
+        } else if (isSubType(field.asType(), Values.PARCELABLE_NAME)) {
+            return TypeKind.PARCELABLE.ordinal();
+        } else if (isSubType(field.asType(), Serializable.class.getCanonicalName())) {
+            return TypeKind.SERIALIZABLE.ordinal();
+        } else {
+            return TypeKind.OBJECT.ordinal();
+        }
     }
 }

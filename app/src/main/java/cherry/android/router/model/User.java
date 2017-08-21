@@ -1,4 +1,4 @@
-package cherry.android.router;
+package cherry.android.router.model;
 
 /**
  * Created by LHEE on 2017/8/20.

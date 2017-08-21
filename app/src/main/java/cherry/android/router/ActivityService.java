@@ -14,13 +14,15 @@ import cherry.android.router.annotations.URL;
 import cherry.android.router.annotations.Uri;
 import cherry.android.router.api.callback.RouterCallback;
 import cherry.android.router.api.request.Request;
+import cherry.android.router.model.ParcelableFoo;
+import cherry.android.router.model.SeriFoo;
+import cherry.android.router.model.User;
 
 /**
  * Created by LHEE on 2017/7/22.
  */
 
 public interface ActivityService {
-    //    @URL("activity://cherry/route1")
     @ClassName(SecondActivity.class)
     Request startActivity(@Query("name") String name,
                           @Query("id") int id,
@@ -31,6 +33,13 @@ public interface ActivityService {
     void startActivity(@Query("name") String name,
                        @Query("id") int id,
                        @Query("user") User user);
+
+    @URL("/activity/route1")
+    void startActivity(@Query("name") String name,
+                       @Query("id") int id,
+                       @Query("user") User user,
+                       @Query("seri") SeriFoo seriFoo,
+                       @Query("parcel") ParcelableFoo parcelableFoo);
 
     @URL("/activity/movie/detail")
     void startActivity(@Query("name") String name,

@@ -31,3 +31,5 @@ dependencies {
     compile project(':router-api')
     compile 'com.google.code.gson:gson:2.8.1'
 }
+apply from: 'maven.gradle'
+apply from: 'bintray.gradle'

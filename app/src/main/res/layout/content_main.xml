@@ -35,13 +35,19 @@
             android:id="@+id/button_2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="open Route1" />
+            android:text="open Route1 with service" />
+
+        <android.support.v7.widget.AppCompatButton
+            android:id="@+id/button_7"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="open Route1 with router" />
 
         <android.support.v7.widget.AppCompatButton
             android:id="@+id/button_3"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="open Route2 For Result" />
+            android:text="open Second with Service" />
 
         <android.support.v7.widget.AppCompatButton
             android:id="@+id/button_4"

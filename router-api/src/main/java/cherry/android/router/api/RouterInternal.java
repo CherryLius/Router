@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
@@ -178,8 +179,10 @@ public final class RouterInternal {
     public RouterInternal extra(String key, Object value) {
         if (mRequest != null) {
             RequestOptions options = mRequest.getOptions();
-            if (options != null)
-                options.extra(key, value);
+            if (options != null) {
+                if (!convertToJson(options, key, value))
+                    options.extra(key, value);
+            }
         }
         return this;
     }
@@ -191,6 +194,25 @@ public final class RouterInternal {
                 options.extra(value);
         }
         return this;
+    }
+
+    private boolean convertToJson(RequestOptions options, String key, Object value) {
+        if (value == null ||
+                !Utils.isJsonType(value.getClass())
+                || value instanceof Parcelable) {
+            return false;
+        }
+        Converter<Object, String> converter = stringConverter(value.getClass(), null);
+        try {
+            if (converter != null) {
+                String json = converter.convert(value);
+                options.extra(key, json);
+                return true;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
@@ -306,12 +328,7 @@ public final class RouterInternal {
             if (converter != null)
                 return converter;
         }
-        return new Converter<String, R>() {
-            @Override
-            public R convert(String s) throws IOException {
-                return null;
-            }
-        };
+        return null;
     }
 
     private final List<Converter.Factory> mConverterFactories = new ArrayList<>();

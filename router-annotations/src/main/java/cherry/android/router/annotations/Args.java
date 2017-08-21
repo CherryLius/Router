@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.FIELD)
 @Documented
-public @interface Extra {
+public @interface Args {
     String name() default "";
 
     boolean nonNull() default false;

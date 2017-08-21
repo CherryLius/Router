@@ -1,12 +1,13 @@
 package cherry.android.router.compiler;
 
+import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
-import cherry.android.router.annotations.Extra;
+import cherry.android.router.annotations.Args;
 
 /**
  * Created by Administrator on 2017/6/8.
@@ -22,7 +23,7 @@ public class Argument {
             throw new IllegalStateException(String.format("Only field can be annotated with @%s",
                     Argument.class.getSimpleName()));
         mFieldElement = (VariableElement) element;
-        Extra annotation = mFieldElement.getAnnotation(Extra.class);
+        Args annotation = mFieldElement.getAnnotation(Args.class);
         mKeyName = annotation.name();
         mNonNull = annotation.nonNull();
         if (mKeyName.isEmpty())
@@ -38,7 +39,13 @@ public class Argument {
     }
 
     public TypeName getTypeName() {
-        return TypeName.get(mFieldElement.asType());
+        TypeName typeName = TypeName.get(mFieldElement.asType());
+        if (typeName instanceof ParameterizedTypeName) {
+            ParameterizedTypeName parameterizedTypeName = (ParameterizedTypeName) typeName;
+            return parameterizedTypeName.rawType;
+        }
+        System.out.println("typeName=" + mFieldElement.asType());
+        return typeName;
     }
 
     public String getKey() {

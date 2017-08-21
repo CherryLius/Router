@@ -38,6 +38,10 @@ public class SecondActivity extends AppCompatActivity implements View.OnClickLis
         findViewById(R.id.button3).setOnClickListener(this);
         findViewById(R.id.button4).setOnClickListener(this);
         service = Router.create(ActivityService.class);
+        Bundle bundle = getIntent().getExtras();
+        for (String key : bundle.keySet()) {
+            Logger.e("Test", "key=" + key + ",value=" + bundle.get(key));
+        }
     }
 
     private ActivityService service;
