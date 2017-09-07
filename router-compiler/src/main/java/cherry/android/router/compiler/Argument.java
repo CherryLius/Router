@@ -44,7 +44,6 @@ public class Argument {
             ParameterizedTypeName parameterizedTypeName = (ParameterizedTypeName) typeName;
             return parameterizedTypeName.rawType;
         }
-        System.out.println("typeName=" + mFieldElement.asType());
         return typeName;
     }
 

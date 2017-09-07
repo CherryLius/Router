@@ -22,8 +22,8 @@ import javax.tools.Diagnostic;
 import cherry.android.router.annotations.Args;
 import cherry.android.router.annotations.Interceptor;
 import cherry.android.router.annotations.Route;
-import cherry.android.router.compiler.generate.InterceptorGenerator;
 import cherry.android.router.compiler.generate.ArgumentGenerator;
+import cherry.android.router.compiler.generate.InterceptorGenerator;
 import cherry.android.router.compiler.generate.RouteGenerator;
 
 import static cherry.android.router.compiler.common.Values.ACTIVITY_CLASS_NAME;
