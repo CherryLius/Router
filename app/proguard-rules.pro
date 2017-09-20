@@ -23,3 +23,14 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+-keep class **_Router { *; }
+-keep class **_RoutePicker { *; }
+-keep class **_InterceptorPicker { *; }
+-keep class cherry.android.router.api.Picker { *; }
+-keep class cherry.android.router.api.RouteRule { *; }
+-keep class cherry.android.router.api.RouteInterceptor { *; }
+-keep class cherry.android.router.api.utils.Utils { *; }
+-keep class cherry.android.router.api.bundle.** { *; }
+-keepclasseswithmembernames class * {
+    @cherry.android.router.annotations.* <fields>;
+}
