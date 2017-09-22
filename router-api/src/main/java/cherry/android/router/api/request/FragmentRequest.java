@@ -7,6 +7,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 import cherry.android.router.api.RouteRule;
+import cherry.android.router.api.utils.Logger;
 import cherry.android.router.api.utils.Utils;
 
 /**
@@ -54,7 +55,7 @@ public class FragmentRequest<T, R> extends AbstractRequest<T, R> {
 
     @Override
     public void request() {
-
+        Logger.w("FragmentRequest", "request not impl");
     }
 
 }

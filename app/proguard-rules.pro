@@ -23,6 +23,12 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+-keepattributes *Annotation*
+-keepattributes InnerClasses
+# 泛型
+-keepattributes Signature
+# 异常
+-keepattributes Exceptions
 -keep class **_Router { *; }
 -keep class **_RoutePicker { *; }
 -keep class **_InterceptorPicker { *; }

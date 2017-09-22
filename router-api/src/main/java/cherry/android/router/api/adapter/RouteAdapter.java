@@ -1,11 +1,10 @@
 package cherry.android.router.api.adapter;
 
 import android.app.Fragment;
+import android.content.Intent;
 
 import java.lang.reflect.Type;
 
-import cherry.android.router.api.request.ActionRequest;
-import cherry.android.router.api.request.ActivityRequest;
 import cherry.android.router.api.request.FragmentRequest;
 import cherry.android.router.api.request.Request;
 
@@ -28,17 +27,18 @@ public class RouteAdapter implements RequestAdapter {
                 throw new UnsupportedOperationException("must get returnType to hold Fragment");
             else if (returnType.equals(Fragment.class) || returnType.equals(android.support.v4.app.Fragment.class))
                 return request.invoke();
-            else if (returnType.equals(Request.class))
-                return request;
-        } else if (request instanceof ActionRequest) {
-            request.request();
-            return request.invoke();
-        }/* else if (request instanceof ActivityRequest) {
+
+        }
+        if (returnType.equals(Request.class)) {
             request.request();
             return request;
-        }*/
+        }
+        if (returnType.equals(Intent.class)) {
+            request.request();
+            return request.invoke();
+        }
         request.request();
-        return request;
+        return null;
     }
 
 }

@@ -3,7 +3,6 @@ package cherry.android.router.api.request;
 import android.support.annotation.NonNull;
 
 import cherry.android.router.api.exception.UnKnownUriException;
-import cherry.android.router.api.utils.Logger;
 
 /**
  * Created by LHEE on 2017/7/26.

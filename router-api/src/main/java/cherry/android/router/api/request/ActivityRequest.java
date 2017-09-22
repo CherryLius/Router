@@ -69,16 +69,25 @@ public class ActivityRequest<R> extends AbstractRequest<Intent, R> {
                     this.options.getOptionsCompat().toBundle() :
                     null;
         }
-        if (requestCode == -1) {
-            startActivity(intent, options);
-        } else {
-            startActivityForResult(intent, requestCode, options);
+        try {
+            if (requestCode == -1) {
+                startActivity(intent, options);
+            } else {
+                startActivityForResult(intent, requestCode, options);
+            }
+            if (enterAnim != 0 || exitAnim != 0) {
+                overridePendingTransition(enterAnim, exitAnim);
+            }
+            if (callback != null)
+                callback.onSuccess(this);
+        } catch (Exception e) {
+            if (callback != null) {
+                callback.onFailed(this, e.getMessage());
+            } else {
+                throw new RuntimeException(e);
+            }
         }
-        if (enterAnim != 0 || exitAnim != 0) {
-            overridePendingTransition(enterAnim, exitAnim);
-        }
-        if (callback != null)
-            callback.onSuccess(this);
+
     }
 
     private void startActivity(Intent intent, Bundle options) {
