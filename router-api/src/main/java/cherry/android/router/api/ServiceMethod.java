@@ -242,7 +242,7 @@ import cherry.android.router.api.utils.Utils;
                         Query query = (Query) annotation;
                         Converter<Object, String> converter = this.routerInternal.stringConverter(parameterType, annotation);
                         if (!TextUtils.isEmpty(baseUrl)) {
-                            parameters[i] = new Parameter.QueryURL<>(query.value(), converter);
+                            parameters[i] = new Parameter.QueryURL<>(query.value(), converter, query.encoded());
                         } else {
                             parameters[i] = new Parameter.QueryRequest<>(query.value(), converter);
                         }

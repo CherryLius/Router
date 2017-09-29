@@ -67,9 +67,6 @@ public abstract class AbstractRequest<T, R> implements Request<T, R> {
         for (Map.Entry<String, String> entry : queryMap.entrySet()) {
             this.options.getArguments().putString(entry.getKey(), entry.getValue());
         }
-//        for (String name : routeUri.getQueryParameterNames()) {
-//            this.options.getArguments().putString(name, routeUri.getQueryParameter(name));
-//        }
     }
 
     @Override

@@ -1,5 +1,6 @@
 package cherry.android.router.api;
 
+import android.net.Uri;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.text.TextUtils;
 
@@ -26,9 +27,11 @@ import cherry.android.router.api.request.Request;
 
     static class QueryURL<R> extends Parameter<RouteUrl.Builder, R> {
 
+        private boolean encoded;
 
-        QueryURL(String name, Converter<R, String> converter) {
+        QueryURL(String name, Converter<R, String> converter, boolean encoded) {
             super(name, converter);
+            this.encoded = encoded;
             if (TextUtils.isEmpty(name))
                 throw new NullPointerException("name should not be Null or Empty");
         }
@@ -38,6 +41,10 @@ import cherry.android.router.api.request.Request;
             if (args == null) return;
             String value = converter.convert(args);
             if (value == null) return;
+            if (!encoded) {
+                value = Uri.encode(value);
+                name = Uri.encode(name);
+            }
             builder.addQueryParameter(name, value);
         }
     }

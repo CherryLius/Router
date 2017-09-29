@@ -19,7 +19,7 @@ apply plugin: 'maven'
 apply plugin: 'com.jfrog.bintray'
 
 group = 'cherry.android'
-version = '1.2.0'
+version = '1.2.1'
 uploadArchives {
     repositories {
         mavenDeployer {
