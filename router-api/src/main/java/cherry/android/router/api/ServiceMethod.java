@@ -247,8 +247,7 @@ import cherry.android.router.api.utils.Utils;
                             parameters[i] = new Parameter.QueryRequest<>(query.value(), converter);
                         }
                     } else if (annotation instanceof Uri) {
-                        Uri uri = (Uri) annotation;
-                        parameters[i] = new Parameter.UriRequest<>(uri.value());
+                        parameters[i] = new Parameter.UriRequest<>();
                     } else if (annotation instanceof OptionsCompat) {
                         parameters[i] = new Parameter.OptionsCompat<>(null);
                     }
@@ -273,7 +272,8 @@ import cherry.android.router.api.utils.Utils;
                 options.transition(op.enterAnim(), op.exitAnim())
                         .ignoreInterceptor(op.ignoreInterceptor())
                         .requestCode(op.requestCode())
-                        .flags(op.flags());
+                        .flags(op.flags())
+                        .category(op.category());
             }
         }
 

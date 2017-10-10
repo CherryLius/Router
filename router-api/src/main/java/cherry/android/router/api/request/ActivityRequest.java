@@ -9,10 +9,10 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.text.TextUtils;
 
 import cherry.android.router.api.RouteRule;
 import cherry.android.router.api.RouterInternal;
-import cherry.android.router.api.utils.Logger;
 
 /**
  * Created by ROOT on 2017/7/25.
@@ -44,8 +44,13 @@ public class ActivityRequest<R> extends AbstractRequest<Intent, R> {
         if (!(context instanceof Activity)) {
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         }
-        if (this.options != null && this.options.getFlags() != -1) {
-            intent.addFlags(this.options.getFlags());
+        if (this.options != null) {
+            if (this.options.getFlags() != -1) {
+                intent.addFlags(this.options.getFlags());
+            }
+            if (!TextUtils.isEmpty(this.options.getCategory())) {
+                intent.addCategory(this.options.getCategory());
+            }
         }
         return intent;
     }
@@ -112,8 +117,9 @@ public class ActivityRequest<R> extends AbstractRequest<Intent, R> {
                 && host instanceof android.app.Fragment) {
             ((android.app.Fragment) host).startActivityForResult(intent, requestCode, options);
         } else {
-            ContextCompat.startActivity(getContext(), intent, options);
-            Logger.i(TAG, "cannot startActivityForResult");
+            throw new IllegalArgumentException("need startActivityForResult but Context Illegal. " + getContext());
+//            ContextCompat.startActivity(getContext(), intent, options);
+//            Logger.i(TAG, "cannot startActivityForResult");
         }
     }
 

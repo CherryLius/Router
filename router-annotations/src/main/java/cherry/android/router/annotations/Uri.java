@@ -13,5 +13,4 @@ import java.lang.annotation.Target;
 @Target(ElementType.PARAMETER)
 @Documented
 public @interface Uri {
-    String value() default "";
 }

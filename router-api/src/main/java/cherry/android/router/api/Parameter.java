@@ -68,8 +68,8 @@ import cherry.android.router.api.request.Request;
 
     static class UriRequest<R> extends Parameter<ActionRequest, R> {
 
-        UriRequest(String name) {
-            super(name, null);
+        UriRequest() {
+            super(null, null);
         }
 
         @Override

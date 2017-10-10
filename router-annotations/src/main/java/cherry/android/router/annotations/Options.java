@@ -22,4 +22,6 @@ public @interface Options {
     int exitAnim() default -1;
 
     int flags() default -1;
+
+    String category() default "";
 }

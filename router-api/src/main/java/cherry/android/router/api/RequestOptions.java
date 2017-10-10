@@ -20,10 +20,11 @@ public class RequestOptions {
     @AnimRes
     private int exitAnim;
     private boolean ignoreInterceptor;
-    private int requestCode;
+    private int requestCode = -1;
     private ActivityOptionsCompat optionsCompat;
     private Bundle arguments;
     private int flags;
+    private String category;
 
     RequestOptions() {
         arguments = new Bundle();
@@ -71,6 +72,11 @@ public class RequestOptions {
         return this;
     }
 
+    RequestOptions category(String category) {
+        this.category = category;
+        return this;
+    }
+
     @AnimRes
     public int getEnterAnim() {
         return this.enterAnim;
@@ -99,5 +105,9 @@ public class RequestOptions {
 
     public int getFlags() {
         return this.flags;
+    }
+
+    public String getCategory() {
+        return this.category;
     }
 }
