@@ -103,7 +103,7 @@ public final class Router {
         return serviceMethod;
     }
 
-    public static void addConverterFactory(@NonNull Converter.Factory factory){
+    public static void addConverterFactory(@NonNull Converter.Factory factory) {
         RouterInternal.get().addConverterFactory(factory);
     }
 
@@ -163,6 +163,9 @@ public final class Router {
             return constructor;
         String className = targetClass.getName();
         Logger.i(TAG, "target class=" + className);
+        if (className.startsWith("android.") || className.startsWith("java.")) {
+            return null;
+        }
         try {
             Class<?> routerClass = Class.forName(className + "_Router");
             constructor = routerClass.getConstructor(targetClass, FieldBundle.class);
