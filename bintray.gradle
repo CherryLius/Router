@@ -130,10 +130,10 @@ bintray {
         publish = true //[Default: false] Whether version should be auto published after an upload
 
         version {
-            name = config.versions.version
-            desc = "release ${this.version}"
+            name = project.version?:config.versions.version
+            desc = "release ${project.version?:config.versions.version}"
             released = new Date()
-            vcsTag = config.versions.version
+            vcsTag = project.version?:config.versions.version
         }
     }
 }
