@@ -7,11 +7,7 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 25
-        versionCode 1
-        versionName "1.0"
-
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-
     }
     buildTypes {
         release {
@@ -22,99 +18,29 @@ android {
 }
 
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:appcompat-v7:25.3.1'
-    testCompile 'junit:junit:4.12'
-    compile project(':router-annotations')
+    implementation 'com.android.support:appcompat-v7:25.3.1'
+    testImplementation 'junit:junit:4.12'
+    implementation project(':router-annotations')
 }
 
-tasks.withType(Javadoc) {
-    options {
-        encoding 'UTF-8'
-        charSet 'UTF-8'
-        links "http://docs.oracle.com/javase/7/docs/api"
-    }
+group = config.versions.group
+version = config.versions.version
+
+apply from: '../maven.gradle'
+apply from: '../bintray.gradle'
+
+println "versions=${version}"
+
+ext {
+    javadocSource = '../router-annotations/src/main/java'
 }
 
-apply plugin: 'com.github.dcendents.android-maven'
-apply plugin: 'com.jfrog.bintray'
-
-group = 'cherry.android'
-version = '1.2.2'
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            repository(url: uri('F:/Android/repos'))
-        }
-    }
-}
-def siteUrl = 'https://github.com/CherryLius/Router'
-def gitUrl = 'https://github.com/CherryLius/Router.git'
-
-install {
-    repositories.mavenInstaller {
-        pom {
-            project {
-                packaging 'aar'
-
-                name 'router-api.'
-                url siteUrl
-
-                licenses {
-                    license {
-                        name 'The Apache Software License, Version 2.0'
-                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                    }
-                }
-
-                developers {
-                    developer {
-                        id 'cherry'
-                        name 'cherry'
-                        email '767041809@qq.com'
-                    }
-                }
-                scm {
-                    connection gitUrl
-                    developerConnection gitUrl
-                    url siteUrl
-                }
-            }
-        }
-    }
-}
-task sourcesJar(type: Jar) {
+task sourcesJar(type: Jar, overwrite: true) {
     from android.sourceSets.main.java.srcDirs
+    from zipTree("../router-annotations/build/libs/router-annotations-${version}.jar")
     classifier = 'sources'
-}
-task javadoc(type: Javadoc) {
-    source = android.sourceSets.main.java.srcDirs
-    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
-}
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    from javadoc.destinationDir
-    classifier = 'javadoc'
-}
-artifacts {
-    archives javadocJar
-    archives sourcesJar
-}
-
-Properties properties = new Properties()
-properties.load(project.rootProject.file('local.properties').newDataInputStream())
-bintray {
-    user = properties.getProperty("bintray.user")
-    key = properties.getProperty("bintray.apikey")
-    configurations = ['archives']
-    pkg {
-        repo = 'Maven'
-        name = 'router-api'
-        websiteUrl = siteUrl
-        vcsUrl = gitUrl
-        licenses = ["Apache-2.0"]
-        publish = true
-    }
 }
